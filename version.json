@@ -1,5 +1,5 @@
 {
-  "version": "12.4",
-  "build": "2026-08-27-mobile-drawer-hit-testing-fix",
+  "version": "12.5",
+  "build": "2026-08-27-mobile-event-handler-cleanup",
   "released": "2026-08-27"
 }
