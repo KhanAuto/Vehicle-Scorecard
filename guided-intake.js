@@ -5,6 +5,7 @@
   if (!APP) return;
 
   let currentStep = 1;
+  let selectedPurpose = "";
 
   function el(tag, className = "", html = "") {
     const node = document.createElement(tag);
@@ -24,15 +25,11 @@
     currentStep = Math.min(4, Math.max(1, Number(step) || 1));
 
     document.querySelectorAll("[data-intake-step]").forEach((panel) => {
-      panel.classList.toggle(
-        "active",
-        Number(panel.dataset.intakeStep) === currentStep
-      );
+      panel.classList.toggle("active", Number(panel.dataset.intakeStep) === currentStep);
     });
 
     const label = document.querySelector("#intakeStepLabel");
     const bar = document.querySelector("#intakeProgressBar");
-
     if (label) label.textContent = `Step ${currentStep} of 4`;
     if (bar) bar.style.width = `${currentStep * 25}%`;
     if (currentStep >= 2) updateVehicleSummary();
@@ -41,9 +38,8 @@
   }
 
   function updateVehicleSummary() {
-    const name = document.querySelector("#intakeVehicleName");
-    const vin = document.querySelector("#intakeVehicleVin");
-
+    const name = APP.$("#intakeVehicleName");
+    const vin = APP.$("#intakeVehicleVin");
     if (name) name.textContent = vehicleName();
     if (vin) {
       vin.textContent = APP.value("vin")
@@ -53,21 +49,11 @@
   }
 
   function showEntry(kind) {
-    document.querySelector("#vinEntryPanel")?.classList.toggle(
-      "hidden",
-      kind !== "vin"
-    );
+    APP.$("#vinEntryPanel")?.classList.toggle("hidden", kind !== "vin");
+    APP.$("#manualEntryPanel")?.classList.toggle("hidden", kind !== "manual");
 
-    document.querySelector("#manualEntryPanel")?.classList.toggle(
-      "hidden",
-      kind !== "manual"
-    );
-
-    document.querySelectorAll(".intake-method").forEach((button) => {
-      button.classList.toggle(
-        "selected",
-        button.dataset.method === kind
-      );
+    APP.$$(".intake-method").forEach((button) => {
+      button.classList.toggle("selected", button.dataset.method === kind);
     });
 
     if (kind === "vin") APP.$("#vin")?.focus();
@@ -76,35 +62,43 @@
 
   function requireVehicle() {
     const vehicle = APP.getVehicle();
-
-    if (vehicle.year && vehicle.make && vehicle.model) {
-      return true;
-    }
+    if (vehicle.year && vehicle.make && vehicle.model) return true;
 
     const status = APP.$("#decodeStatus");
     if (status) {
-      status.textContent =
-        "Identify the vehicle first: decode the VIN or select year, make and model.";
+      status.textContent = "Identify the vehicle first: decode the VIN or select year, make and model.";
       status.classList.add("intake-warning");
     }
-
     return false;
+  }
+
+  function choosePurpose(purpose) {
+    selectedPurpose = purpose;
+
+    if (purpose === "condition") APP.setLayer("condition");
+    if (purpose === "buy") APP.setMode("buy");
+    if (purpose === "sell") APP.setMode("sell");
+
+    APP.$$('[data-guided-purpose]').forEach((button) => {
+      button.classList.toggle("active", button.dataset.guidedPurpose === purpose);
+      button.classList.toggle("selected", button.dataset.guidedPurpose === purpose);
+    });
   }
 
   function buildWizard() {
     const profile = APP.$("#profilePage");
     const oldCard = profile?.querySelector(":scope > .card");
-
     if (!oldCard || oldCard.dataset.guided === "true") return;
 
-    const assessment = APP.$("#assessmentSelector");
     const originalGrid = oldCard.querySelector(".field-grid");
-    const toolbar = oldCard.querySelector(".inline-toolbar");
+    const oldToolbar = oldCard.querySelector(".inline-toolbar");
+    const assessment = APP.$("#assessmentSelector");
     const decodeStatus = APP.$("#decodeStatus");
     const recallResults = APP.$("#recallResults");
+    const decodeButton = APP.$("#decodeVin");
+    const recallButton = APP.$("#checkRecalls");
 
     const labels = {};
-
     [
       "vin", "yearSelect", "makeSelect", "modelSelect", "model", "trim",
       "mileage", "asking", "zip", "seller", "title", "keys", "cold", "records"
@@ -114,7 +108,6 @@
 
     const shell = el("div", "card intake-shell");
     shell.dataset.guided = "true";
-
     shell.innerHTML = `
       <div class="intake-topline">
         <div>
@@ -127,66 +120,71 @@
 
       <div class="intake-progress"><div id="intakeProgressBar"></div></div>
 
-      <div class="intake-step active" data-intake-step="1" id="intakeStep1">
+      <div class="intake-step active" data-intake-step="1">
         <div class="intake-method-grid intake-method-grid-two">
           <button type="button" class="intake-method primary-method" id="showVinEntry" data-method="vin">
             <span class="method-icon">VIN</span>
             <b>Enter VIN</b>
             <span>Enter the 17-character VIN and identify the vehicle automatically.</span>
           </button>
-
           <button type="button" class="intake-method" id="showManualEntry" data-method="manual">
             <span class="method-icon">⌨</span>
             <b>Enter Manually</b>
             <span>Select the year, make and model yourself.</span>
           </button>
         </div>
-
         <div id="vinEntryPanel" class="intake-entry-panel hidden"></div>
         <div id="manualEntryPanel" class="intake-entry-panel hidden">
           <div class="grid3 field-grid" id="manualVehicleFields"></div>
         </div>
-
         <div id="guidedDecodeStatus"></div>
-
         <div class="intake-actions">
           <button class="btn primary" id="intakeVehicleNext">Vehicle Identified →</button>
         </div>
       </div>
 
-      <div class="intake-step" data-intake-step="2" id="intakeStep2">
+      <div class="intake-step" data-intake-step="2">
         <div class="intake-confirm-card">
           <div class="muted">IDENTIFIED VEHICLE</div>
           <div id="intakeVehicleName" class="intake-vehicle-name">Vehicle not identified</div>
           <div id="intakeVehicleVin" class="muted"></div>
         </div>
-
         <div class="grid2 field-grid intake-narrow-grid" id="mileageFields"></div>
-
         <div class="intake-actions">
           <button class="btn" data-intake-back="1">← Vehicle</button>
           <button class="btn primary" id="intakeMileageNext">Continue →</button>
         </div>
       </div>
 
-      <div class="intake-step" data-intake-step="3" id="intakeStep3">
-        <div class="title">What are you trying to learn?</div>
-        <div class="hint">Choose the purpose after the vehicle is identified. You can change it later.</div>
-        <div id="guidedPurpose"></div>
-
+      <div class="intake-step" data-intake-step="3">
+        <div class="title">What type of assessment are you running?</div>
+        <div class="hint">Condition is always the foundation. Pricing analysis adds recon, market and buy/sell economics on top.</div>
+        <div class="assessment-layer-grid three-purpose-grid guided-purpose-grid">
+          <button type="button" class="assessment-choice" data-guided-purpose="condition">
+            <b>Condition Only</b>
+            <span>Inspect, score and document the vehicle without pricing analysis.</span>
+          </button>
+          <button type="button" class="assessment-choice" data-guided-purpose="buy">
+            <b>Condition + Pricing · Buying</b>
+            <span>Condition, recon, market position and maximum sensible purchase price.</span>
+          </button>
+          <button type="button" class="assessment-choice" data-guided-purpose="sell">
+            <b>Condition + Pricing · Selling</b>
+            <span>Condition, recon, market position and realistic sale strategy.</span>
+          </button>
+        </div>
         <div class="intake-actions">
           <button class="btn" data-intake-back="2">← Mileage</button>
           <button class="btn primary" id="intakePurposeNext">Continue →</button>
         </div>
       </div>
 
-      <div class="intake-step" data-intake-step="4" id="intakeStep4">
+      <div class="intake-step" data-intake-step="4">
         <div class="title">Additional Vehicle Details</div>
-        <div class="hint">Add what you know now. Most of this is optional and can be completed later.</div>
+        <div class="hint">Add what you know now. These details add context to the assessment and can be completed later.</div>
         <div class="grid4 field-grid" id="miscVehicleFields"></div>
-        <div id="guidedToolbar"></div>
+        <div id="guidedRecallTools" class="toolbar inline-toolbar no-print"></div>
         <div id="guidedRecall"></div>
-
         <div class="intake-actions">
           <button class="btn" data-intake-back="3">← Purpose</button>
           <button class="btn primary" id="intakeFinish">Start Assessment →</button>
@@ -195,16 +193,12 @@
 
     oldCard.replaceWith(shell);
 
-    const vinPanel = APP.$("#vinEntryPanel");
-    if (labels.vin) vinPanel.append(labels.vin);
-
-    const decodeButton = APP.$("#decodeVin");
+    if (labels.vin) APP.$("#vinEntryPanel").append(labels.vin);
     if (decodeButton) {
       const decodeTools = el("div", "toolbar inline-toolbar no-print");
       decodeTools.append(decodeButton);
-      vinPanel.append(decodeTools);
+      APP.$("#vinEntryPanel").append(decodeTools);
     }
-
     if (decodeStatus) APP.$("#guidedDecodeStatus").append(decodeStatus);
 
     ["yearSelect", "makeSelect", "modelSelect", "model", "trim"].forEach((id) => {
@@ -219,69 +213,24 @@
       if (labels[id]) APP.$("#miscVehicleFields").append(labels[id]);
     });
 
-    assessment.classList.add("guided-purpose");
-    assessment.querySelector(".selector-label")?.remove();
-
-    const layerGrid = assessment.querySelector(".assessment-layer-grid");
-    const conditionButton = layerGrid?.querySelector('[data-layer="condition"]');
-    const valueButton = layerGrid?.querySelector('[data-layer="value"]');
-
-    if (conditionButton) {
-      conditionButton.querySelector("b").textContent = "Condition Only";
-      conditionButton.querySelector("span").textContent =
-        "Inspect, score and document the vehicle without pricing analysis.";
-    }
-
-    if (valueButton) valueButton.remove();
-
-    const modeGrid = APP.$("#valueModeChoices");
-
-    if (modeGrid) {
-      modeGrid.classList.remove("value-mode-grid");
-      modeGrid.classList.add("assessment-layer-grid", "three-purpose-grid", "show");
-
-      const buyButton = modeGrid.querySelector('[data-value-mode="buy"]');
-      const sellButton = modeGrid.querySelector('[data-value-mode="sell"]');
-
-      if (buyButton) {
-        buyButton.querySelector("b").textContent = "Buying This Vehicle";
-        buyButton.querySelector("span").textContent =
-          "Condition, recon, market position and maximum sensible purchase price.";
-      }
-
-      if (sellButton) {
-        sellButton.querySelector("b").textContent = "Selling This Vehicle";
-        sellButton.querySelector("span").textContent =
-          "Condition, recon, market position and realistic sale strategy.";
-      }
-
-      if (layerGrid) {
-        layerGrid.append(...modeGrid.children);
-        modeGrid.remove();
-        layerGrid.classList.add("three-purpose-grid");
-      }
-    }
-
-    APP.$("#guidedPurpose").append(assessment);
-
-    if (toolbar) APP.$("#guidedToolbar").append(toolbar);
+    if (recallButton) APP.$("#guidedRecallTools").append(recallButton);
     if (recallResults) APP.$("#guidedRecall").append(recallResults);
 
+    assessment?.remove();
+    oldToolbar?.remove();
     originalGrid?.remove();
   }
 
   function transformDashboard() {
     const startGrid = APP.$("#homePage .start-grid");
-
     if (!startGrid || startGrid.dataset.guided === "true") return;
 
     startGrid.dataset.guided = "true";
     startGrid.innerHTML = `
       <button class="start-card start-card-primary" id="guidedNewVehicle">
         <b>+ Assess a Vehicle</b>
-        <span>Identify the vehicle first, then choose condition, buying or selling.</span>
+        <span>Identify the vehicle first, then choose condition-only or condition + pricing.</span>
       </button>
-
       <button class="start-card" id="guidedSavedVehicles">
         <b>Open Saved Vehicles</b>
         <span>Jump back into a previous inspection or value analysis.</span>
@@ -289,6 +238,7 @@
 
     APP.$("#guidedNewVehicle").onclick = () => {
       APP.clearCurrent();
+      selectedPurpose = "";
       showStep(1);
       APP.showPage("profilePage");
     };
@@ -300,6 +250,10 @@
     APP.$("#showVinEntry").onclick = () => showEntry("vin");
     APP.$("#showManualEntry").onclick = () => showEntry("manual");
 
+    APP.$$('[data-guided-purpose]').forEach((button) => {
+      button.addEventListener("click", () => choosePurpose(button.dataset.guidedPurpose));
+    });
+
     APP.$("#intakeVehicleNext").onclick = () => {
       if (requireVehicle()) showStep(2);
     };
@@ -309,19 +263,14 @@
         alert("Enter the current mileage or mark mileage as unknown.");
         return;
       }
-
       showStep(3);
     };
 
     APP.$("#intakePurposeNext").onclick = () => {
-      const layer = APP.getLayer();
-      const mode = APP.getMode();
-
-      if (!layer || (layer === "value" && !["buy", "sell"].includes(mode))) {
-        alert("Choose Condition Only, Buying This Vehicle, or Selling This Vehicle.");
+      if (!selectedPurpose) {
+        alert("Choose Condition Only, Condition + Pricing · Buying, or Condition + Pricing · Selling.");
         return;
       }
-
       showStep(4);
     };
 
@@ -330,7 +279,7 @@
       APP.showPage("inspectionPage");
     };
 
-    document.querySelectorAll("[data-intake-back]").forEach((button) => {
+    APP.$$('[data-intake-back]').forEach((button) => {
       button.addEventListener("click", () => showStep(button.dataset.intakeBack));
     });
 
