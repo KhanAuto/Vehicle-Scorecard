@@ -3,65 +3,45 @@
   const APP = window.VehicleScorecard;
   if (!APP) return;
 
-  function drawer(){ return document.getElementById("appDrawer"); }
-  function scrim(){ return document.getElementById("appScrim"); }
-  function isOpen(){ return drawer()?.classList.contains("open"); }
-  function open(){
-    drawer()?.classList.add("open");
-    scrim()?.classList.add("open");
-    document.documentElement.classList.add("drawer-open-v124");
-    document.body.classList.add("drawer-open-v124");
-  }
-  function close(){
-    drawer()?.classList.remove("open");
-    scrim()?.classList.remove("open");
-    document.documentElement.classList.remove("drawer-open-v124");
-    document.body.classList.remove("drawer-open-v124");
+  const drawer = document.getElementById("appDrawer");
+  const scrim = document.getElementById("appScrim");
+  const dock = document.getElementById("v12BottomDock");
+  if (!drawer || !scrim) return;
+
+  function setOpen(open) {
+    drawer.classList.toggle("open", open);
+    scrim.classList.toggle("open", open);
+    document.body.classList.toggle("drawer-open-v124", open);
   }
 
-  // Intercept only the bottom Menu command and open the actual drawer directly.
-  // This avoids relying on the now-hidden legacy top hamburger button.
-  document.addEventListener("click", (event) => {
-    const menu = event.target.closest('#v12BottomDock [data-v122-dock="menu"], #v12BottomDock [data-dock="menu"]');
-    if (!menu) return;
+  // One bottom-dock handler. No document-level capture interception.
+  dock?.addEventListener("click", event => {
+    const button = event.target.closest('[data-v122-dock="menu"], [data-dock="menu"]');
+    if (!button) return;
     event.preventDefault();
-    event.stopImmediatePropagation();
-    isOpen() ? close() : open();
-  }, true);
+    event.stopPropagation();
+    setOpen(!drawer.classList.contains("open"));
+  });
 
-  // Make drawer page navigation deterministic and prevent a tap from reaching
-  // an expanded garage card behind the drawer on iOS Safari.
-  document.addEventListener("click", (event) => {
-    const link = event.target.closest("#appDrawer .drawer-link[data-target]");
+  // Handle the drawer itself so taps are resolved inside the visible layer.
+  drawer.addEventListener("click", event => {
+    const closeButton = event.target.closest(".drawer-close");
+    if (closeButton) {
+      event.preventDefault();
+      setOpen(false);
+      return;
+    }
+
+    const link = event.target.closest(".drawer-link[data-target]");
     if (!link) return;
     event.preventDefault();
-    event.stopImmediatePropagation();
     const target = link.dataset.target;
-    close();
-    if (target) APP.showPage?.(target);
-  }, true);
-
-  document.addEventListener("click", (event) => {
-    if (event.target.closest("#appDrawer .drawer-close")) {
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      close();
-    }
-  }, true);
-
-  document.addEventListener("click", (event) => {
-    if (event.target === scrim()) {
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      close();
-    }
-  }, true);
-
-  // Keep state synchronized if legacy code opens/closes the drawer.
-  const observer = new MutationObserver(() => {
-    const openNow = isOpen();
-    document.documentElement.classList.toggle("drawer-open-v124", openNow);
-    document.body.classList.toggle("drawer-open-v124", openNow);
+    setOpen(false);
+    if (target) requestAnimationFrame(() => APP.showPage?.(target));
   });
-  if (drawer()) observer.observe(drawer(), { attributes:true, attributeFilter:["class"] });
+
+  scrim.addEventListener("click", event => {
+    event.preventDefault();
+    setOpen(false);
+  });
 })();
