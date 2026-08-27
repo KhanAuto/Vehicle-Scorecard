@@ -209,64 +209,40 @@
       <div class="card">
         <div class="title">Reconditioning Plan</div>
         <div class="hint">Standard rough allowances are editable. Recommended and Required items feed the known recon total.</div>
-
-        <div class="scroll table-wrap">
-          <table>
-            <thead><tr><th>Item</th><th>Status</th><th>Standard</th><th>Your Cost</th><th>Used</th></tr></thead>
-            <tbody id="reconBody"></tbody>
-          </table>
-        </div>
-
+        <div class="scroll table-wrap"><table><thead><tr><th>Item</th><th>Status</th><th>Standard</th><th>Your Cost</th><th>Used</th></tr></thead><tbody id="reconBody"></tbody></table></div>
         <div class="results">
           <div class="metric"><div class="muted">Required Repairs</div><div class="v" id="requiredRecon">$0</div></div>
           <div class="metric"><div class="muted">Recommended</div><div class="v" id="recommendedRecon">$0</div></div>
           <div class="metric"><div class="muted">Cosmetic / Prep</div><div class="v" id="cosmeticRecon">$0</div></div>
           <div class="metric"><div class="muted">Known Recon</div><div class="v" id="reconTotal">$0</div></div>
         </div>
-
         <div class="grid3 section-gap">
-          <label>
-            Unknown Repair / Risk Reserve
-            <input id="contingency" inputmode="decimal" placeholder="0">
-            <span class="field-help">Reserve for unexpected repair costs you may have missed.</span>
-          </label>
+          <label>Unknown Repair / Risk Reserve<input id="contingency" inputmode="decimal" placeholder="0"><span class="field-help">Reserve for unexpected repair costs you may have missed.</span></label>
           <div class="metric"><div class="muted">Unknown / Risk Items</div><div class="v" id="unknownReconCount">0</div></div>
           <div class="metric"><div class="muted">Potential All-In Recon</div><div class="v" id="reconRisk">$0</div></div>
         </div>
       </div>
-
-      <div class="page-actions no-print">
-        <button class="btn" data-prev>← Inspection</button>
-        <button class="btn primary" data-next>Market →</button>
-      </div>
+      <div class="page-actions no-print"><button class="btn" data-prev>← Inspection</button><button class="btn primary" data-next>Market →</button></div>
     </section>
 
     <section id="marketPage" class="page value-page">
       <div class="card">
         <div class="title">Local Market & Value References</div>
         <div class="hint">Manual market references only. No paid API key is required.</div>
-
         <div class="grid4 field-grid">
           <label>ZIP<input id="marketZip" maxlength="5"></label>
           <label>Radius<input id="marketRadius" value="50"></label>
           <label>Comparable Mileage<input id="compMileage"></label>
           <label>Notes<input id="marketNotes"></label>
         </div>
-
-        <div class="toolbar inline-toolbar">
-          <button class="btn primary" id="runMarketSearch">Open Local Search</button>
-          <button class="btn" id="refreshMarketLinks">Refresh Links</button>
-        </div>
-
+        <div class="toolbar inline-toolbar"><button class="btn primary" id="runMarketSearch">Open Local Search</button><button class="btn" id="refreshMarketLinks">Refresh Links</button></div>
         <div id="marketStatus" class="notice">Confirm vehicle details and ZIP, then enter market references below.</div>
-
         <div class="grid4 market-grid section-gap">
           <div class="source"><b>KBB</b><div class="grid2"><label>Trade<input id="kbbTrade"></label><label>Private<input id="kbbPrivate"></label></div><a id="openKbb" target="_blank" rel="noopener">Open KBB</a></div>
           <div class="source"><b>Edmunds</b><div class="grid2"><label>Trade<input id="edmundsTrade"></label><label>Private<input id="edmundsPrivate"></label></div><a id="openEdmunds" target="_blank" rel="noopener">Open Edmunds</a></div>
           <div class="source"><b>Dealer Comps</b><div class="grid2"><label>Comp #1<input id="dealer1"></label><label>Comp #2<input id="dealer2"></label></div><a id="openCarGurus" target="_blank" rel="noopener">Open CarGurus Search</a></div>
           <div class="source"><b>Private / Wholesale</b><div class="grid2"><label>Private Comp<input id="privateComp"></label><label>Instant / Wholesale<input id="instantOffer"></label></div><a id="openSearch" target="_blank" rel="noopener">Search Web</a></div>
         </div>
-
         <div class="results">
           <div class="metric"><div class="muted">Trade Average</div><div class="v" id="guideTradeAvg">$0</div></div>
           <div class="metric"><div class="muted">Private Average</div><div class="v" id="guidePrivateAvg">$0</div></div>
@@ -274,26 +250,16 @@
           <div class="metric"><div class="muted">Condition-Adjusted</div><div class="v" id="scoreAdjustedMarket">$0</div></div>
         </div>
       </div>
-
-      <div class="page-actions no-print">
-        <button class="btn" data-prev>← Recon</button>
-        <button class="btn primary" data-next>Value →</button>
-      </div>
+      <div class="page-actions no-print"><button class="btn" data-prev>← Recon</button><button class="btn primary" data-next>Value →</button></div>
     </section>
 
     <section id="dealPage" class="page value-page">
       <div class="card">
         <div class="title">Value & Price Analysis</div>
         <div class="hint" id="dealModeHint">Complete the selected buy or sell analysis.</div>
-
-        <div class="analysis-tabs">
-          <button class="analysis-tab" data-analysis-mode="sell">Selling</button>
-          <button class="analysis-tab" data-analysis-mode="buy">Buying</button>
-        </div>
-
+        <div class="analysis-tabs"><button class="analysis-tab" data-analysis-mode="sell">Selling</button><button class="analysis-tab" data-analysis-mode="buy">Buying</button></div>
         <div id="sellAnalysis">
           <div class="plain-guide"><div class="plain-guide-title">Selling: what these numbers mean</div><p>Enter what the car is worth now, what it could be worth after planned work, and what you realistically expect to sell it for.</p></div>
-
           <div class="grid4 field-grid">
             <label>Current As-Is Value<input id="sellAsIs"><span class="field-help">What the vehicle is realistically worth today before repairs.</span></label>
             <label>Post-Recon Market Value<input id="sellPostRecon"><span class="field-help">What it could reasonably be worth after planned work.</span></label>
@@ -304,14 +270,12 @@
             <label>Other Selling Costs<input id="sellCosts"></label>
             <label>Recon Strategy<select id="sellReconMode"><option value="all">Complete Planned Recon</option><option value="required">Required Only</option><option value="none">Sell As-Is</option></select></label>
           </div>
-
           <div class="grid4 section-gap">
             <label>Broker Fee Type<select id="brokerType"><option value="none">None</option><option value="flat">Flat Fee</option><option value="percent">Commission %</option></select></label>
             <label>Flat Broker Fee<input id="brokerFlat"></label>
             <label>Commission %<input id="brokerPercent"></label>
             <label>Minimum Commission<input id="brokerMinimum"></label>
           </div>
-
           <div class="results">
             <div class="metric"><div class="muted">Recon Included</div><div class="v" id="sellReconUsed">$0</div></div>
             <div class="metric"><div class="muted">Expected Net Proceeds</div><div class="v" id="sellNet">$0</div></div>
@@ -321,10 +285,8 @@
             <div class="metric"><div class="muted">Pricing Check</div><div class="v" id="pricingCheck">—</div></div>
           </div>
         </div>
-
         <div id="buyAnalysis" class="hidden">
           <div class="plain-guide"><div class="plain-guide-title">Buying: what these numbers mean</div><p>Enter what the seller wants, what you plan to pay, expected recon and a realistic resale target. The app calculates your basis and maximum buy.</p></div>
-
           <div class="grid4 field-grid">
             <label>Seller Asking Price<input id="buyAsk"><span class="field-help">What the seller is currently asking.</span></label>
             <label>Target Purchase Price<input id="buyTarget"><span class="field-help">What you actually plan to offer or pay.</span></label>
@@ -335,7 +297,6 @@
             <label>Selling Costs<input id="buySellingCosts"></label>
             <label>Use Recon<select id="buyReconMode"><option value="all">Potential All-In Recon</option><option value="known">Known Recon Only</option><option value="required">Required Only</option></select></label>
           </div>
-
           <div class="results">
             <div class="metric"><div class="muted">Recon Used</div><div class="v" id="buyReconUsed">$0</div></div>
             <div class="metric"><div class="muted">Total Basis</div><div class="v" id="buyBasis">$0</div></div>
@@ -348,7 +309,6 @@
           </div>
         </div>
       </div>
-
       <div class="card">
         <div class="title">Final Decision</div>
         <div class="grid3">
@@ -358,49 +318,29 @@
         </div>
         <label class="block-label">Key Defects / Negotiation Notes<textarea id="notes"></textarea></label>
       </div>
-
-      <div class="page-actions no-print">
-        <button class="btn" data-prev>← Market</button>
-        <button class="btn primary" data-next>View Report →</button>
-      </div>
+      <div class="page-actions no-print"><button class="btn" data-prev>← Market</button><button class="btn primary" data-next>View Report →</button></div>
     </section>
 
     <section id="savedPage" class="page">
       <div class="card">
         <div class="title">Saved Vehicles</div>
-        <div class="toolbar inline-toolbar">
-          <button class="btn" id="exportCurrent">Export Current</button>
-          <button class="btn" id="exportAll">Export All</button>
-          <label class="btn import-label">Import Backup<input id="importFile" type="file" accept="application/json"></label>
-        </div>
+        <div class="toolbar inline-toolbar"><button class="btn" id="exportCurrent">Export Current</button><button class="btn" id="exportAll">Export All</button><label class="btn import-label">Import Backup<input id="importFile" type="file" accept="application/json"></label></div>
         <div id="savedList"></div>
       </div>
-
-      <div class="card">
-        <div class="title">Compare Vehicles</div>
-        <div id="comparePicker"></div>
-        <div class="scroll"><table id="compareTable"></table></div>
-      </div>
-
-      <div class="page-actions no-print">
-        <button class="btn" data-prev>← Back</button>
-        <button class="btn primary" id="savedOverview">Overview</button>
-      </div>
+      <div class="card"><div class="title">Compare Vehicles</div><div id="comparePicker"></div><div class="scroll"><table id="compareTable"></table></div></div>
+      <div class="page-actions no-print"><button class="btn" data-prev>← Back</button><button class="btn primary" id="savedOverview">Overview</button></div>
     </section>
   </main>
 
   <div id="appScrim" class="app-drawer-scrim"></div>
-
   <aside id="appDrawer" class="app-drawer no-print">
     <div class="drawer-head">
       <div class="drawer-emblem">✓</div>
       <div><div class="drawer-title">Vehicle Scorecard</div><div class="drawer-version" id="drawerVersion">v11.0 · Production</div></div>
       <button id="appClose" class="drawer-close" aria-label="Close menu">×</button>
     </div>
-
     <div class="drawer-section-label">NAVIGATE</div>
     <div id="drawerPages" class="drawer-pages"></div>
-
     <div class="drawer-section-label">APP</div>
     <div class="drawer-tools">
       <div id="buildStatus" class="build-status">Current build: v11.0</div>
@@ -413,9 +353,9 @@
 
   <div id="appToast" class="update-toast"></div>
 
-  <script src="js/core.js"></script>
-  <script src="js/inspection.js"></script>
-  <script src="js/intelligence.js"></script>
-  <script src="js/ui.js"></script>
+  <script src="core.js"></script>
+  <script src="inspection.js"></script>
+  <script src="intelligence.js"></script>
+  <script src="ui.js"></script>
 </body>
 </html>
