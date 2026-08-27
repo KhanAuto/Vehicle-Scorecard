@@ -1,0 +1,170 @@
+(() => {
+  "use strict";
+
+  const APP = window.VehicleScorecard;
+  if (!APP) return;
+
+  const PATH_KEY = "vehicleScorecardAssessmentPath";
+  const FLOWS = {
+    inspection: [
+      ["profilePage", "Vehicle"],
+      ["inspectionPage", "Inspection"],
+      ["homePage", "Report"]
+    ],
+    value: [
+      ["profilePage", "Vehicle"],
+      ["marketPage", "Market"],
+      ["dealPage", "Value"],
+      ["homePage", "Report"]
+    ],
+    full: [
+      ["profilePage", "Vehicle"],
+      ["marketPage", "Market"],
+      ["dealPage", "Value"],
+      ["inspectionPage", "Inspection"],
+      ["reconPage", "Recon"],
+      ["homePage", "Report"]
+    ]
+  };
+
+  function getPath() {
+    const stored = localStorage.getItem(PATH_KEY);
+    if (FLOWS[stored]) return stored;
+    return APP.getLayer?.() === "condition" ? "inspection" : "full";
+  }
+
+  function setPath(path) {
+    if (!FLOWS[path]) return;
+    localStorage.setItem(PATH_KEY, path);
+    document.dispatchEvent(new CustomEvent("scorecard:pathchange"));
+  }
+
+  APP.getAssessmentPath = APP.getAssessmentPath || getPath;
+  APP.setAssessmentPath = APP.setAssessmentPath || setPath;
+
+  function activePage() {
+    return document.querySelector(".page.active")?.id || "homePage";
+  }
+
+  function flow() {
+    return FLOWS[getPath()] || FLOWS.full;
+  }
+
+  function pageComplete(pageId) {
+    if (pageId === "profilePage") return (APP.validateVehicleProfile?.() || []).length === 0;
+    if (pageId === "inspectionPage") {
+      const s = APP.inspection?.getOverallScore?.();
+      return Boolean(s?.answered);
+    }
+    if (pageId === "marketPage") {
+      return ["kbbTrade","kbbPrivate","edmundsTrade","edmundsPrivate","dealer1","dealer2","privateComp","instantOffer"]
+        .some((id) => APP.numberFrom?.(id) > 0);
+    }
+    if (pageId === "dealPage") {
+      const mode = APP.getMode?.();
+      return mode === "buy" ? APP.numberFrom?.("buyAsk") > 0 : Boolean(APP.marketSnapshot?.().baseline);
+    }
+    if (pageId === "reconPage") return true;
+    return false;
+  }
+
+  function renderStrip() {
+    const strip = document.getElementById("workflowStrip");
+    if (!strip) return;
+    const current = activePage();
+    strip.innerHTML = flow().map(([pageId, label], index) => {
+      const classes = ["workflow-step", pageId === current ? "active" : "", pageComplete(pageId) ? "done" : ""].filter(Boolean).join(" ");
+      return `${index ? '<span class="workflow-arrow">›</span>' : ""}<button class="${classes}" data-v12-workflow="${pageId}" type="button">${label}</button>`;
+    }).join("");
+    strip.querySelectorAll("[data-v12-workflow]").forEach((button) => {
+      button.addEventListener("click", () => APP.showPage?.(button.dataset.v12Workflow));
+    });
+  }
+
+  function syncDrawer() {
+    const p = getPath();
+    document.querySelectorAll(".drawer-link").forEach((button) => {
+      const target = button.dataset.target;
+      const allowed = p === "full" ||
+        (p === "inspection" && !["reconPage","marketPage","dealPage"].includes(target)) ||
+        (p === "value" && !["inspectionPage","reconPage"].includes(target));
+      button.classList.toggle("hidden", !allowed);
+    });
+  }
+
+  function syncPageButtons() {
+    const current = activePage();
+    const f = flow();
+    const index = f.findIndex(([id]) => id === current);
+    if (index < 0 || current === "homePage") return;
+    const page = document.getElementById(current);
+    const prev = page?.querySelector("[data-prev]");
+    const next = page?.querySelector("[data-next]");
+    const previous = index > 0 ? f[index - 1] : ["homePage", "Dashboard"];
+    const following = index < f.length - 1 ? f[index + 1] : ["homePage", "Report"];
+    if (prev) prev.textContent = `← ${previous[1]}`;
+    if (next) next.textContent = following[0] === "homePage" ? "View Report →" : `${following[1]} →`;
+  }
+
+  function sync() {
+    renderStrip();
+    syncDrawer();
+    syncPageButtons();
+  }
+
+  function navigate(direction) {
+    const current = activePage();
+    const f = flow();
+    const index = f.findIndex(([id]) => id === current);
+    if (index < 0) return;
+    if (direction === "next" && current === "profilePage") {
+      const missing = APP.validateVehicleProfile?.() || [];
+      if (missing.length) {
+        alert(`Complete required vehicle information: ${missing.join(", ")}.`);
+        return;
+      }
+    }
+    const target = direction === "next"
+      ? (f[Math.min(index + 1, f.length - 1)]?.[0] || "homePage")
+      : (index > 0 ? f[index - 1][0] : "homePage");
+    if (target === "homePage") APP.saveCurrent?.();
+    APP.showPage?.(target);
+  }
+
+  document.addEventListener("click", (event) => {
+    const purpose = event.target.closest("[data-guided-purpose]");
+    if (purpose) setPath(purpose.dataset.guidedPurpose);
+
+    const directive = event.target.closest("[data-guided-directive]");
+    if (directive) APP.setMode?.(directive.dataset.guidedDirective);
+
+    const finish = event.target.closest("#intakeFinish");
+    if (finish && ["value","full"].includes(getPath())) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      APP.saveCurrent?.();
+      APP.showPage?.("marketPage");
+      return;
+    }
+
+    const button = event.target.closest(".page.active [data-next], .page.active [data-prev]");
+    if (!button) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    navigate(button.hasAttribute("data-next") ? "next" : "prev");
+  }, true);
+
+  const originalShow = APP.showPage;
+  if (typeof originalShow === "function" && !originalShow._v12Wrapped) {
+    const wrapped = (pageId, options) => {
+      const result = originalShow(pageId, options);
+      window.setTimeout(sync, 0);
+      return result;
+    };
+    wrapped._v12Wrapped = true;
+    APP.showPage = wrapped;
+  }
+
+  ["scorecard:workflowchange","scorecard:datachange","scorecard:inspectionchange","scorecard:pathchange","scorecard:core-ready"]
+    .forEach((name) => document.addEventListener(name, () => window.setTimeout(sync, 0)));
+})();
