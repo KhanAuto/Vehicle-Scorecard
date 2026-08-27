@@ -1,5 +1,5 @@
 {
-  "version": "12.5",
-  "build": "2026-08-27-mobile-event-handler-cleanup",
+  "version": "12.6",
+  "build": "2026-08-27-navigation-performance-cleanup",
   "released": "2026-08-27"
 }
