@@ -9,6 +9,8 @@
   }
   function money(v){ return Number(v)>0 ? APP.money(Number(v)) : "—"; }
   function savedFor(card){
+    const id = card.dataset.vehicleId;
+    if (id) return (APP.getSaved?.()||[]).find(v => String(v.id) === String(id)) || null;
     const title=card.querySelector(".v12-vehicle-title")?.textContent?.trim();
     return (APP.getSaved?.()||[]).find(v=>nameFor(v)===title) || null;
   }
@@ -46,37 +48,53 @@
     await APP.loadSaved?.(vehicle.id);
     APP.showPage?.(page);
   }
-  function bindCard(card){
-    if(card.dataset.v123Bound==="1") return;
-    card.dataset.v123Bound="1";
-    card.setAttribute("role","button");
-    card.setAttribute("aria-expanded","false");
-    card.addEventListener("click",async event=>{
-      const jump=event.target.closest("[data-v123-page]");
-      const vehicle=savedFor(card);
-      if(jump){
-        event.preventDefault(); event.stopPropagation();
-        await openPage(vehicle,jump.dataset.v123Page); return;
-      }
-      if(event.target.closest("button,a,input,select,textarea")) return;
-      event.preventDefault(); event.stopPropagation();
-      const existing=card.querySelector(":scope > .v123-inline-overview");
-      document.querySelectorAll(".v12-vehicle-card.v123-expanded").forEach(other=>{
-        if(other!==card){other.classList.remove("v123-expanded");other.setAttribute("aria-expanded","false");other.querySelector(":scope > .v123-inline-overview")?.remove();}
-      });
-      if(existing){ existing.remove(); card.classList.remove("v123-expanded"); card.setAttribute("aria-expanded","false"); return; }
-      card.insertAdjacentHTML("beforeend",details(vehicle));
-      card.classList.add("v123-expanded"); card.setAttribute("aria-expanded","true");
-    },true);
+  function collapseOthers(except){
+    document.querySelectorAll("#quickSaved .v12-vehicle-card.v123-expanded").forEach(other=>{
+      if(other===except) return;
+      other.classList.remove("v123-expanded");
+      other.setAttribute("aria-expanded","false");
+      other.querySelector(":scope > .v123-inline-overview")?.remove();
+    });
   }
   function cleanLegacyOverview(){
-    const home=document.querySelector("#homePage");
-    if(!home) return;
-    home.querySelectorAll("#dashboardReport,.v12-vehicle-dashboard").forEach(el=>{ if(!el.closest(".v12-vehicle-card")) el.classList.add("v123-hide-legacy-overview"); });
+    document.querySelectorAll("#homePage > #dashboardReport, #homePage .v12-vehicle-dashboard").forEach(el=>el.classList.add("v123-hide-legacy-overview"));
   }
-  function refresh(){ document.querySelectorAll("#quickSaved .v12-vehicle-card").forEach(bindCard); cleanLegacyOverview(); }
-  const observer=new MutationObserver(()=>setTimeout(refresh,0));
-  observer.observe(document.documentElement,{subtree:true,childList:true});
-  ["scorecard:core-ready","scorecard:dashboardrender","scorecard:vehiclechange"].forEach(n=>document.addEventListener(n,()=>setTimeout(refresh,30)));
-  setTimeout(refresh,50);
+  function install(){
+    const host = document.getElementById("quickSaved");
+    if (!host || host.dataset.v126Expand === "1") { cleanLegacyOverview(); return; }
+    host.dataset.v126Expand = "1";
+    host.addEventListener("click", async event => {
+      const card = event.target.closest(".v12-vehicle-card");
+      if (!card || !host.contains(card)) return;
+      const vehicle = savedFor(card);
+      const jump = event.target.closest("[data-v123-page]");
+      if (jump) {
+        event.preventDefault();
+        event.stopPropagation();
+        await openPage(vehicle, jump.dataset.v123Page);
+        return;
+      }
+      if (event.target.closest("button,a,input,select,textarea")) return;
+      event.preventDefault();
+      event.stopPropagation();
+      const existing = card.querySelector(":scope > .v123-inline-overview");
+      if (existing) {
+        existing.remove();
+        card.classList.remove("v123-expanded");
+        card.setAttribute("aria-expanded","false");
+        return;
+      }
+      collapseOthers(card);
+      card.insertAdjacentHTML("beforeend", details(vehicle));
+      card.classList.add("v123-expanded");
+      card.setAttribute("aria-expanded","true");
+    });
+    cleanLegacyOverview();
+  }
+
+  ["scorecard:core-ready","scorecard:dashboardrender","scorecard:vehiclechange"].forEach(name=>{
+    document.addEventListener(name,()=>requestAnimationFrame(install));
+  });
+  window.addEventListener("load",install,{once:true});
+  setTimeout(install,100);
 })();
