@@ -72,12 +72,15 @@
     return false;
   }
 
-  function choosePurpose(purpose) {
-    selectedPurpose = purpose;
-
+  function applyPurpose(purpose) {
     if (purpose === "condition") APP.setLayer("condition");
     if (purpose === "buy") APP.setMode("buy");
     if (purpose === "sell") APP.setMode("sell");
+  }
+
+  function choosePurpose(purpose) {
+    selectedPurpose = purpose;
+    applyPurpose(purpose);
 
     APP.$$('[data-guided-purpose]').forEach((button) => {
       button.classList.toggle("active", button.dataset.guidedPurpose === purpose);
@@ -275,7 +278,17 @@
     };
 
     APP.$("#intakeFinish").onclick = () => {
+      if (!selectedPurpose) {
+        alert("Choose an assessment type before starting the inspection.");
+        showStep(3);
+        return;
+      }
+
+      // Re-apply the selected workflow immediately before entering Inspection.
+      // This prevents save/render events from leaving the app on a stale flow.
+      applyPurpose(selectedPurpose);
       APP.saveCurrent?.();
+      applyPurpose(selectedPurpose);
       APP.showPage("inspectionPage");
     };
 
@@ -288,10 +301,49 @@
     });
   }
 
+  function clarifyInspectionMetrics() {
+    const transactionMetric = APP.$("#transactionStatus")?.closest(".metric");
+    const transactionLabel = transactionMetric?.querySelector(".muted");
+    if (transactionLabel) transactionLabel.textContent = "Title & Vehicle History";
+
+    const maintenanceMetric = APP.$("#maintenanceScore")?.closest(".metric");
+    if (maintenanceMetric && !maintenanceMetric.querySelector(".metric-explainer")) {
+      const note = el("div", "muted metric-explainer", "Service-record confidence; separate from physical condition.");
+      maintenanceMetric.append(note);
+    }
+
+    const redFlagMetric = APP.$("#redFlagCount")?.closest(".metric");
+    if (redFlagMetric && !redFlagMetric.querySelector(".metric-explainer")) {
+      const note = el("div", "muted metric-explainer", "Counts only critical safety, structural or major mechanical failures — not every Poor item.");
+      redFlagMetric.append(note);
+    }
+  }
+
+  function bindInspectionNavigationFallback() {
+    document.addEventListener("click", (event) => {
+      const button = event.target.closest("#inspectionPage [data-next]");
+      if (!button) return;
+
+      event.preventDefault();
+      event.stopImmediatePropagation();
+
+      const layer = APP.getLayer() || "condition";
+      const target = layer === "value" ? "reconPage" : "homePage";
+
+      if (layer === "condition") {
+        APP.saveCurrent?.();
+      }
+
+      APP.showPage(target);
+    }, true);
+  }
+
   function initialize() {
     buildWizard();
     transformDashboard();
     bindWizard();
+    clarifyInspectionMetrics();
+    bindInspectionNavigationFallback();
   }
 
   document.addEventListener("scorecard:core-ready", initialize);
