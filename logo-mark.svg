@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Vehicle Scorecard">
+  <defs>
+    <linearGradient id="shield" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2ea1ff"/>
+      <stop offset="1" stop-color="#0868e8"/>
+    </linearGradient>
+  </defs>
+  <path d="M64 8 108 22v34c0 29-17 50-44 64C37 106 20 85 20 56V22L64 8Z" fill="#071426" stroke="url(#shield)" stroke-width="7"/>
+  <path d="M39 61h8l7-13c2-4 6-7 11-7h18c5 0 9 3 11 7l7 13h4c4 0 7 3 7 7v13h-8a10 10 0 0 1-20 0H54a10 10 0 0 1-20 0h-7V68c0-4 3-7 7-7h5Zm14 0h42l-6-10c-1-2-3-3-6-3H65c-3 0-5 1-6 3l-6 10Z" fill="#dbe9f8"/>
+  <circle cx="44" cy="81" r="6" fill="#071426" stroke="#dbe9f8" stroke-width="3"/>
+  <circle cx="94" cy="81" r="6" fill="#071426" stroke="#dbe9f8" stroke-width="3"/>
+  <path d="m46 96 11 11 25-27" fill="none" stroke="#36d57b" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
