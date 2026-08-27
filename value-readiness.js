@@ -6,118 +6,43 @@
 
   const SPECS = {
     sell: {
-      title: "Selling calculation readiness",
       required: [
-        {
-          id: "sellAsIs",
-          label: "Current As-Is Value",
-          why: "Establishes what the vehicle is worth before additional work."
-        },
-        {
-          id: "sellTarget",
-          label: "Expected Sale Price",
-          why: "Needed to calculate realistic net proceeds."
-        }
+        { id: "sellAsIs", label: "Current As-Is Value", why: "Needed to establish today's value." },
+        { id: "sellTarget", label: "Expected Sale Price", why: "Needed to calculate expected proceeds." }
       ],
       recommended: [
-        {
-          id: "sellPostRecon",
-          label: "Post-Recon Market Value",
-          why: "Shows whether planned recon actually adds enough value."
-        },
-        {
-          id: "sellList",
-          label: "Recommended List Price",
-          why: "Lets the app compare your advertised price with expected market value."
-        },
-        {
-          id: "sellCosts",
-          label: "Other Selling Costs",
-          why: "Improves the accuracy of seller take-home."
-        }
+        { id: "sellPostRecon", label: "Post-Recon Market Value", why: "Shows whether recon adds enough value." },
+        { id: "sellList", label: "Recommended List Price", why: "Helps compare asking price with market value." },
+        { id: "sellCosts", label: "Other Selling Costs", why: "Improves net-proceeds accuracy." },
+        { id: "sellReconMode", label: "Recon Strategy", why: "Controls which recon costs are included." }
       ],
-      optional: [
-        "sellQuick",
-        "sellFloor",
-        "brokerType",
-        "brokerFlat",
-        "brokerPercent",
-        "brokerMinimum"
-      ],
-      outputs: [
-        "sellNet",
-        "sellerNetAfterBroker",
-        "reconBenefit",
-        "pricingCheck"
-      ]
+      optional: ["sellQuick", "sellFloor", "brokerType", "brokerFlat", "brokerPercent", "brokerMinimum"],
+      outputs: ["sellNet", "sellerNetAfterBroker", "reconBenefit", "pricingCheck"]
     },
     buy: {
-      title: "Buying calculation readiness",
       required: [
-        {
-          id: "buyAsk",
-          fallback: "asking",
-          label: "Seller Asking Price",
-          why: "Defines the starting price you are comparing against."
-        },
-        {
-          id: "buyResale",
-          label: "Expected Resale Price",
-          why: "Needed to estimate profit, ROI and maximum sensible purchase price."
-        },
-        {
-          id: "requiredProfit",
-          label: "Required Profit",
-          why: "Defines the minimum return the deal must produce."
-        }
+        { id: "buyAsk", fallback: "asking", label: "Seller Asking Price", why: "Needed as the starting purchase price." },
+        { id: "buyResale", label: "Expected Resale Price", why: "Needed for profit, ROI and maximum-buy calculations." },
+        { id: "requiredProfit", label: "Required Profit", why: "Needed to calculate the maximum sensible purchase price." }
       ],
       recommended: [
-        {
-          id: "buyTarget",
-          label: "Target Purchase Price",
-          why: "Lets the app calculate your expected basis at the price you actually plan to pay."
-        },
-        {
-          id: "buyFees",
-          label: "Tax / Title / Registration",
-          why: "Adds unavoidable transaction costs to your basis."
-        },
-        {
-          id: "buyAcqCosts",
-          label: "Other Acquisition Costs",
-          why: "Captures transport, auction, inspection or other acquisition expenses."
-        },
-        {
-          id: "buySellingCosts",
-          label: "Selling Costs",
-          why: "Improves projected profit and margin accuracy."
-        }
+        { id: "buyTarget", label: "Target Purchase Price", why: "Uses the price you actually expect to pay." },
+        { id: "buyFees", label: "Tax / Title / Registration", why: "Adds unavoidable transaction costs." },
+        { id: "buyAcqCosts", label: "Other Acquisition Costs", why: "Adds transport, auction or inspection expenses." },
+        { id: "buySellingCosts", label: "Selling Costs", why: "Improves projected profit and margin accuracy." },
+        { id: "buyReconMode", label: "Use Recon", why: "Controls which recon costs are included." }
       ],
       optional: [],
-      outputs: [
-        "buyBasis",
-        "buyProfit",
-        "buyROI",
-        "buyMargin",
-        "calculatedMaxBuy",
-        "negotiationGap",
-        "dealAssessment"
-      ]
+      outputs: ["buyBasis", "buyProfit", "buyROI", "buyMargin", "calculatedMaxBuy", "negotiationGap", "dealAssessment"]
     }
   };
 
   function hasRawValue(id) {
     const element = document.getElementById(id);
-    if (!element) return false;
-
-    if (element.tagName === "SELECT") {
-      return String(element.value || "").trim() !== "";
-    }
-
-    return String(element.value || "").trim() !== "";
+    return !!element && String(element.value || "").trim() !== "";
   }
 
-  function requirementComplete(item) {
+  function complete(item) {
     return hasRawValue(item.id) || (item.fallback && hasRawValue(item.fallback));
   }
 
@@ -125,93 +50,90 @@
     return APP.getMode?.() === "buy" ? "buy" : "sell";
   }
 
+  function moneyFromRaw(id) {
+    const element = document.getElementById(id);
+    const raw = String(element?.value || "").replace(/[^0-9.-]/g, "");
+    const number = Number(raw);
+    return Number.isFinite(number) && raw !== "" ? APP.money(number) : "—";
+  }
+
+  function askingPrice() {
+    if (hasRawValue("buyAsk")) return moneyFromRaw("buyAsk");
+    if (hasRawValue("asking")) return moneyFromRaw("asking");
+    return "Not entered";
+  }
+
   function ensurePanel() {
-    const dealCard = document.querySelector("#dealPage > .card");
-    if (!dealCard) return null;
+    const card = document.querySelector("#dealPage > .card");
+    if (!card) return null;
 
     let panel = document.getElementById("valueReadiness");
-    if (panel) return panel;
-
-    panel = document.createElement("div");
-    panel.id = "valueReadiness";
-    panel.className = "value-readiness";
-
-    const hint = document.getElementById("dealModeHint");
-    if (hint) {
-      hint.insertAdjacentElement("afterend", panel);
-    } else {
-      dealCard.prepend(panel);
+    if (!panel) {
+      panel = document.createElement("div");
+      panel.id = "valueReadiness";
+      panel.className = "value-readiness compact-readiness";
+      const hint = document.getElementById("dealModeHint");
+      hint ? hint.insertAdjacentElement("afterend", panel) : card.prepend(panel);
     }
-
     return panel;
   }
 
-  function badgeFor(type) {
-    return `<span class="value-field-badge ${type}">${
-      type === "required" ? "Required" :
-      type === "recommended" ? "Recommended" :
-      "Optional"
-    }</span>`;
+  function typeLabel(type) {
+    return type === "required" ? "Required" : type === "recommended" ? "Recommended" : "Optional";
   }
 
-  function markField(id, type) {
-    const element = document.getElementById(id);
-    const label = element?.closest("label");
+  function markField(id, type, why = "") {
+    const input = document.getElementById(id);
+    const label = input?.closest("label");
     if (!label) return;
 
     let badge = label.querySelector(".value-field-badge");
-
     if (!badge) {
-      label.insertAdjacentHTML("afterbegin", badgeFor(type));
-      badge = label.querySelector(".value-field-badge");
+      badge = document.createElement("span");
+      label.insertBefore(badge, label.firstChild);
+    }
+    badge.className = `value-field-badge ${type}`;
+    badge.textContent = typeLabel(type);
+
+    let requirement = label.querySelector(".value-requirement-help");
+    if (!requirement) {
+      requirement = document.createElement("span");
+      requirement.className = "value-requirement-help";
+      label.appendChild(requirement);
     }
 
-    badge.className = `value-field-badge ${type}`;
-    badge.textContent =
-      type === "required" ? "Required" :
-      type === "recommended" ? "Recommended" :
-      "Optional";
+    if (type === "required") {
+      requirement.textContent = complete({ id }) ? "✓ Complete" : `Needed — ${why}`;
+      requirement.className = `value-requirement-help ${hasRawValue(id) ? "complete" : "needed"}`;
+    } else if (type === "recommended") {
+      requirement.textContent = hasRawValue(id) ? "✓ Added" : (why || "Improves calculation accuracy.");
+      requirement.className = `value-requirement-help ${hasRawValue(id) ? "complete" : ""}`;
+    } else {
+      requirement.textContent = "Only fill this out when it applies.";
+      requirement.className = "value-requirement-help";
+    }
   }
 
   function markFields(spec) {
-    document.querySelectorAll("#dealPage .value-field-badge").forEach((badge) => badge.remove());
-
-    spec.required.forEach((item) => markField(item.id, "required"));
-    spec.recommended.forEach((item) => markField(item.id, "recommended"));
+    document.querySelectorAll("#dealPage .value-field-badge, #dealPage .value-requirement-help").forEach((node) => node.remove());
+    spec.required.forEach((item) => markField(item.id, "required", item.why));
+    spec.recommended.forEach((item) => markField(item.id, "recommended", item.why));
     spec.optional.forEach((id) => markField(id, "optional"));
-
-    if (mode() === "sell") {
-      markField("sellReconMode", "recommended");
-    } else {
-      markField("buyReconMode", "recommended");
-    }
-  }
-
-  function waitingText(missing) {
-    if (!missing.length) return "";
-    if (missing.length === 1) return `Waiting for ${missing[0].label}`;
-    return `Waiting for ${missing.length} required inputs`;
   }
 
   function updateOutputs(spec, missing) {
+    document.querySelectorAll("#dealPage .calculation-waiting").forEach((element) => element.classList.remove("calculation-waiting"));
     if (!missing.length) {
       APP.updateValue?.();
       return;
     }
 
-    const message = waitingText(missing);
-
+    const message = missing.length === 1 ? `Waiting for ${missing[0].label}` : `Waiting for ${missing.length} required inputs`;
     spec.outputs.forEach((id) => {
       const element = document.getElementById(id);
       if (!element) return;
       element.textContent = message;
       element.classList.add("calculation-waiting");
-    });
-  }
-
-  function clearWaitingClasses() {
-    document.querySelectorAll("#dealPage .calculation-waiting").forEach((element) => {
-      element.classList.remove("calculation-waiting");
     });
   }
 
@@ -222,73 +144,29 @@
     if (!panel) return;
 
     markFields(spec);
-    clearWaitingClasses();
 
-    const missingRequired = spec.required.filter((item) => !requirementComplete(item));
-    const completeRequired = spec.required.length - missingRequired.length;
-    const recommendedComplete = spec.recommended.filter(requirementComplete).length;
-
-    const requiredRows = spec.required.map((item) => {
-      const complete = requirementComplete(item);
-      return `
-        <div class="readiness-row ${complete ? "complete" : "missing"}">
-          <span class="readiness-symbol">${complete ? "✓" : "○"}</span>
-          <span>
-            <b>${item.label}</b>
-            <small>${complete ? "Entered" : item.why}</small>
-          </span>
-          <strong>${complete ? "Ready" : "Needed"}</strong>
-        </div>`;
-    }).join("");
-
-    const recommendedRows = spec.recommended.map((item) => {
-      const complete = requirementComplete(item);
-      return `
-        <div class="readiness-row recommended-row ${complete ? "complete" : ""}">
-          <span class="readiness-symbol">${complete ? "✓" : "○"}</span>
-          <span>
-            <b>${item.label}</b>
-            <small>${complete ? "Entered" : item.why}</small>
-          </span>
-          <strong>${complete ? "Added" : "Recommended"}</strong>
-        </div>`;
-    }).join("");
-
-    const ready = missingRequired.length === 0;
+    const missing = spec.required.filter((item) => !complete(item));
+    const done = spec.required.length - missing.length;
+    const ready = missing.length === 0;
 
     panel.innerHTML = `
-      <div class="readiness-head">
+      <div class="readiness-head compact">
         <div>
-          <div class="readiness-title">${spec.title}</div>
-          <div class="readiness-summary ${ready ? "ready" : "pending"}">
-            ${completeRequired}/${spec.required.length} required inputs complete
-          </div>
+          <div class="readiness-title">${currentMode === "buy" ? "Buying" : "Selling"} analysis</div>
+          <div class="readiness-summary ${ready ? "ready" : "pending"}">${done}/${spec.required.length} required inputs complete</div>
         </div>
-        <div class="readiness-status ${ready ? "ready" : "pending"}">
-          ${ready ? "Calculation Ready" : `${missingRequired.length} Remaining`}
-        </div>
+        <div class="readiness-status ${ready ? "ready" : "pending"}">${ready ? "Ready" : `${missing.length} Remaining`}</div>
       </div>
-
-      <div class="readiness-progress">
-        <div style="width:${Math.round((completeRequired / spec.required.length) * 100)}%"></div>
+      <div class="readiness-progress"><div style="width:${Math.round((done / spec.required.length) * 100)}%"></div></div>
+      <div class="value-context-row">
+        <span>Seller Asking Price</span>
+        <strong>${askingPrice()}</strong>
       </div>
-
-      <div class="readiness-grid">
-        <div>
-          <div class="readiness-section-label">REQUIRED</div>
-          ${requiredRows}
-        </div>
-        <div>
-          <div class="readiness-section-label">RECOMMENDED · ${recommendedComplete}/${spec.recommended.length}</div>
-          ${recommendedRows || '<div class="muted">No additional recommended inputs.</div>'}
-        </div>
-      </div>
-
-      <div class="readiness-note">
-        Required fields must be entered before the app treats the financial result as complete. Recommended fields improve accuracy. Optional fields only apply when relevant.
+      <div class="readiness-note compact-note">
+        Fill out the fields below. Each one is marked <b>Required</b>, <b>Recommended</b>, or <b>Optional</b> so you can see exactly what the calculation needs.
       </div>`;
 
-    updateOutputs(spec, missingRequired);
+    updateOutputs(spec, missing);
   }
 
   function scheduleRender() {
@@ -296,13 +174,11 @@
   }
 
   document.addEventListener("input", (event) => {
-    if (event.target.closest("#dealPage")) scheduleRender();
+    if (event.target.closest("#dealPage") || event.target.id === "asking") scheduleRender();
   });
-
   document.addEventListener("change", (event) => {
-    if (event.target.closest("#dealPage")) scheduleRender();
+    if (event.target.closest("#dealPage") || event.target.id === "asking") scheduleRender();
   });
-
   document.addEventListener("scorecard:workflowchange", scheduleRender);
   document.addEventListener("scorecard:datachange", scheduleRender);
   document.addEventListener("scorecard:core-ready", scheduleRender);
@@ -310,10 +186,5 @@
   const observer = new MutationObserver(() => {
     if (document.querySelector("#dealPage.page.active")) scheduleRender();
   });
-
-  observer.observe(document.documentElement, {
-    attributes: true,
-    subtree: true,
-    attributeFilter: ["class"]
-  });
+  observer.observe(document.documentElement, { attributes: true, subtree: true, attributeFilter: ["class"] });
 })();
