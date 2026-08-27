@@ -104,7 +104,7 @@
     const labels = {};
     [
       "vin", "yearSelect", "makeSelect", "modelSelect", "model", "trim",
-      "mileage", "asking", "zip", "seller", "title", "keys", "cold", "records"
+      "mileage", "zip", "seller", "title", "keys", "cold", "records"
     ].forEach((id) => {
       labels[id] = APP.$(`#${id}`)?.closest("label") || null;
     });
@@ -186,7 +186,6 @@
         <div class="title">Additional Vehicle Details</div>
         <div class="hint">Add ownership and history details now if you know them. Pricing fields are handled later in Value & Price Analysis.</div>
         <div class="grid4 field-grid" id="miscVehicleFields"></div>
-        <div id="legacyVehicleFields" class="hidden"></div>
         <div id="guidedRecallTools" class="toolbar inline-toolbar no-print"></div>
         <div id="guidedRecall"></div>
         <div class="intake-actions">
@@ -212,11 +211,6 @@
     ["mileage", "zip"].forEach((id) => {
       if (labels[id]) APP.$("#mileageFields").append(labels[id]);
     });
-
-    // Asking price is intentionally kept out of Vehicle Information.
-    // The hidden legacy field preserves older saved records and is migrated
-    // into the Value & Price Analysis buying field when needed.
-    if (labels.asking) APP.$("#legacyVehicleFields").append(labels.asking);
 
     ["seller", "title", "keys", "cold", "records"].forEach((id) => {
       if (labels[id]) APP.$("#miscVehicleFields").append(labels[id]);
