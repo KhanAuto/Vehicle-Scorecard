@@ -1,0 +1,16 @@
+/* v12.7: return to the original top navigation controls */
+#v12BottomDock{display:none!important}
+.app-controlbar{display:flex!important;align-items:center!important}
+.app-controlbar #appMenu{display:inline-grid!important;place-items:center;order:1!important;margin:0!important}
+.app-controlbar #appBack{display:inline-grid!important;place-items:center;order:2!important}
+.app-controlbar #appForward{display:inline-grid!important;place-items:center;order:3!important}
+.app-controlbar #appPageName{display:block!important;order:4!important;margin-left:4px!important}
+.app-controlbar .control-spacer{display:block!important;order:5!important;flex:1!important}
+.app-controlbar #appOverview{order:6!important}
+@media(max-width:760px){
+  body{padding-bottom:0!important}
+  .shell{padding-bottom:92px!important}
+  .app-controlbar{padding:6px 10px!important;gap:7px!important}
+  .app-controlbar #appMenu,.app-controlbar #appBack,.app-controlbar #appForward{min-width:40px!important;width:40px!important;height:40px!important}
+  .app-controlbar #appPageName{font-size:12px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+}
