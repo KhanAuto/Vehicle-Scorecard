@@ -184,8 +184,9 @@
 
       <div class="intake-step" data-intake-step="4">
         <div class="title">Additional Vehicle Details</div>
-        <div class="hint">Add what you know now. These details add context to the assessment and can be completed later.</div>
+        <div class="hint">Add ownership and history details now if you know them. Pricing fields are handled later in Value & Price Analysis.</div>
         <div class="grid4 field-grid" id="miscVehicleFields"></div>
+        <div id="legacyVehicleFields" class="hidden"></div>
         <div id="guidedRecallTools" class="toolbar inline-toolbar no-print"></div>
         <div id="guidedRecall"></div>
         <div class="intake-actions">
@@ -212,7 +213,12 @@
       if (labels[id]) APP.$("#mileageFields").append(labels[id]);
     });
 
-    ["asking", "seller", "title", "keys", "cold", "records"].forEach((id) => {
+    // Asking price is intentionally kept out of Vehicle Information.
+    // The hidden legacy field preserves older saved records and is migrated
+    // into the Value & Price Analysis buying field when needed.
+    if (labels.asking) APP.$("#legacyVehicleFields").append(labels.asking);
+
+    ["seller", "title", "keys", "cold", "records"].forEach((id) => {
       if (labels[id]) APP.$("#miscVehicleFields").append(labels[id]);
     });
 
@@ -284,8 +290,6 @@
         return;
       }
 
-      // Re-apply the selected workflow immediately before entering Inspection.
-      // This prevents save/render events from leaving the app on a stale flow.
       applyPurpose(selectedPurpose);
       APP.saveCurrent?.();
       applyPurpose(selectedPurpose);
