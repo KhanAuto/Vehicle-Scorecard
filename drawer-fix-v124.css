@@ -1,0 +1,13 @@
+/* v12.4 mobile drawer hit-testing fix */
+#appScrim.app-drawer-scrim{z-index:4998!important}
+#appDrawer.app-drawer{z-index:4999!important;pointer-events:auto!important;touch-action:manipulation;isolation:isolate}
+#appDrawer.open{pointer-events:auto!important}
+#appDrawer *{pointer-events:auto}
+#appScrim.open{pointer-events:auto!important}
+.drawer-open-v124 .v12-bottom-dock{pointer-events:none!important}
+.drawer-open-v124 #appDrawer{pointer-events:auto!important}
+.drawer-open-v124 #appScrim{pointer-events:auto!important}
+@media(max-width:760px){
+  #appDrawer.app-drawer{width:min(360px,88vw);transform:translateX(-104%)}
+  #appDrawer.app-drawer.open{transform:translateX(0)}
+}
