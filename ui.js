@@ -5,6 +5,7 @@ document.write(
   '<link rel="stylesheet" href="garage-polish-v12.css">' +
   '<link rel="stylesheet" href="garage-v12-2.css">' +
   '<link rel="stylesheet" href="garage-expand-v123.css">' +
+  '<link rel="stylesheet" href="drawer-fix-v124.css">' +
   '<script src="theme-v12-pre.js"></script>' +
   '<script src="ui-base.js"></script>' +
   '<script src="guided-intake.js"></script>' +
@@ -12,5 +13,6 @@ document.write(
   '<script src="experience-v12b.js"></script>' +
   '<script src="garage-polish-v12.js"></script>' +
   '<script src="garage-v12-2.js"></script>' +
-  '<script src="garage-expand-v123.js"></script>'
+  '<script src="garage-expand-v123.js"></script>' +
+  '<script src="drawer-fix-v124.js"></script>'
 );
