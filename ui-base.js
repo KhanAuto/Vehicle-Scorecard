@@ -189,21 +189,8 @@
   }
 
   function renderDrawer() {
-    const layer = APP.getLayer() || "condition";
-
     APP.$("#drawerPages").innerHTML =
       DRAWER_PAGES
-        .filter(([pageId]) => {
-          if (layer !== "condition") {
-            return true;
-          }
-
-          return ![
-            "reconPage",
-            "marketPage",
-            "dealPage"
-          ].includes(pageId);
-        })
         .map(([pageId, label, icon]) => `
           <button
             class="drawer-link"
