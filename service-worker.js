@@ -1,11 +1,11 @@
-const CACHE_NAME = "vehicle-scorecard-app-shell-v12-6";
+const CACHE_NAME = "vehicle-scorecard-app-shell-v12-7";
 
 const CORE_ASSETS = [
   "./", "./index.html", "./styles.css", "./core.js", "./inspection.js", "./intelligence.js", "./ui.js",
   "./theme-v12-pre.js", "./ui-base.js", "./guided-intake.js", "./guided-intake.css", "./navigation-v12.js",
-  "./value-readiness.css", "./experience-v12.css", "./experience-v12b.js", "./garage-polish-v12.css", "./garage-polish-v12.js",
+  "./value-readiness.css", "./experience-v12.css", "./experience-v12b.js", "./garage-polish-v12.css",
   "./garage-v12-2.css", "./garage-v12-2.js", "./garage-expand-v123.css", "./garage-expand-v123.js",
-  "./drawer-fix-v124.css", "./drawer-fix-v124.js", "./logo-mark.svg", "./manifest.webmanifest", "./version.json",
+  "./nav-reset-v127.css", "./logo-mark.svg", "./manifest.webmanifest", "./version.json",
   "./icon-180.png", "./icon-192.png", "./icon-512.png"
 ];
 async function refreshCoreCache(){const cache=await caches.open(CACHE_NAME);for(const asset of CORE_ASSETS){try{const response=await fetch(asset,{cache:"reload"});if(response.ok)await cache.put(asset,response.clone());}catch(error){console.warn("Pre-cache skipped:",asset,error);}}}
