@@ -1,13 +1,19 @@
-const CACHE_NAME = "vehicle-scorecard-app-shell";
+const CACHE_NAME = "vehicle-scorecard-app-shell-v11-1";
 
 const CORE_ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
-  "./js/core.js",
-  "./js/inspection.js",
-  "./js/intelligence.js",
-  "./js/ui.js",
+  "./core.js",
+  "./inspection.js",
+  "./intelligence.js",
+  "./ui.js",
+  "./ui-base.js",
+  "./guided-intake.js",
+  "./guided-intake-hotfix.js",
+  "./guided-intake.css",
+  "./vin-scanner.js",
+  "./vin-scanner.css",
   "./manifest.webmanifest",
   "./version.json",
   "./icon-180.png",
@@ -20,13 +26,15 @@ async function refreshCoreCache() {
 
   for (const asset of CORE_ASSETS) {
     try {
-      const response = await fetch(asset, { cache: "reload" });
+      const response = await fetch(asset, {
+        cache: "reload"
+      });
 
       if (response.ok) {
         await cache.put(asset, response.clone());
       }
     } catch (error) {
-      console.warn("Pre-cache skipped:", asset);
+      console.warn("Pre-cache skipped:", asset, error);
     }
   }
 }
@@ -67,7 +75,9 @@ self.addEventListener("fetch", (event) => {
   }
 
   event.respondWith(
-    fetch(event.request, { cache: "no-store" })
+    fetch(event.request, {
+      cache: "no-store"
+    })
       .then((response) => {
         if (response.ok) {
           const copy = response.clone();
