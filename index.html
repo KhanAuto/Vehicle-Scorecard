@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#08111f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Vehicle Scorecard">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+  <title>Used-Vehicle Scorecard</title>
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <div class="brandmark">✓</div>
+      <div>
+        <h1>USED-VEHICLE SCORECARD</h1>
+        <div class="sub">Condition first · Value when needed · <span id="buildLabel">v11.0</span></div>
+      </div>
+      <div class="score" id="topScore">Condition —</div>
+    </div>
+  </header>
+
+  <div id="appControlbar" class="app-controlbar no-print">
+    <button id="appMenu" class="menu-btn" aria-label="Open menu">☰</button>
+    <button id="appBack" aria-label="Back">←</button>
+    <button id="appForward" aria-label="Forward">→</button>
+    <div id="appPageName" class="page-name">Dashboard</div>
+    <div class="control-spacer"></div>
+    <button id="appOverview" class="compact-action">Overview</button>
+  </div>
+
+  <div id="workflowStrip" class="workflow-strip no-print"></div>
+
+  <main class="shell">
+    <section id="homePage" class="page active">
+      <div id="quickSaved" class="card"></div>
+
+      <div class="dashboard-grid">
+        <div class="card dash-main">
+          <div>
+            <div class="eyebrow">VEHICLE ASSESSMENT WORKSPACE</div>
+            <h2>Condition first.<br>Numbers when you need them.</h2>
+            <p>
+              Build a defensible vehicle condition scorecard first.
+              Add recon, local market references and buy/sell analysis only when needed.
+            </p>
+          </div>
+
+          <div class="start-grid">
+            <button class="start-card" data-start-layer="condition">
+              <b>Condition Assessment</b>
+              <span>Inspect, score and document the vehicle.</span>
+            </button>
+
+            <button class="start-card" data-start-layer="value">
+              <b>Condition + Value</b>
+              <span>Add recon, market and buy/sell pricing analysis.</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="title">At a Glance</div>
+          <div class="results">
+            <div class="metric"><div class="muted">Saved</div><div class="v" id="dashSaved">0</div></div>
+            <div class="metric"><div class="muted">Current Score</div><div class="v" id="dashScore">—</div></div>
+            <div class="metric"><div class="muted">Known Recon</div><div class="v" id="dashRecon">$0</div></div>
+            <div class="metric"><div class="muted">Assessment</div><div class="v" id="dashMode">—</div></div>
+          </div>
+          <div class="title section-title">Recent Vehicles</div>
+          <div id="dashRecent" class="recent"></div>
+        </div>
+      </div>
+
+      <section id="dashboardReport" class="card report-card"></section>
+    </section>
+
+    <section id="profilePage" class="page">
+      <div class="card">
+        <div class="title">Vehicle Information</div>
+        <div class="hint">
+          Choose the assessment type first, then identify the vehicle.
+          Year, make, model and mileage are required unless mileage is explicitly unknown.
+        </div>
+
+        <div id="assessmentSelector" class="assessment-selector">
+          <div class="selector-label">Assessment Type *</div>
+
+          <div class="assessment-layer-grid">
+            <button type="button" class="assessment-choice" data-layer="condition">
+              <b>Condition Assessment</b>
+              <span>Condition scorecard only.</span>
+            </button>
+
+            <button type="button" class="assessment-choice" data-layer="value">
+              <b>Condition + Value</b>
+              <span>Add recon, market and pricing analysis.</span>
+            </button>
+          </div>
+
+          <div id="valueModeChoices" class="value-mode-grid">
+            <button type="button" class="assessment-choice" data-value-mode="buy">
+              <b>Buying</b>
+              <span>Is the vehicle worth buying at this price?</span>
+            </button>
+
+            <button type="button" class="assessment-choice" data-value-mode="sell">
+              <b>Selling</b>
+              <span>What is a realistic sale strategy and net?</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid4 field-grid">
+          <label>VIN<input id="vin" maxlength="17" autocomplete="off"></label>
+          <label>Year *<select id="yearSelect"><option value="">Select Year</option></select><input id="year" type="hidden"></label>
+          <label>Make *<select id="makeSelect" disabled><option value="">Select Year First</option></select><input id="make" type="hidden"></label>
+          <label>Model *<select id="modelSelect" disabled><option value="">Select Make First</option></select></label>
+          <label>Manual Model<input id="model" placeholder="Use if model is not listed"></label>
+          <label>Trim / Series<input id="trim"></label>
+          <label>
+            Mileage *
+            <input id="mileage" inputmode="numeric">
+            <span class="inline-check"><input id="mileageUnknown" type="checkbox">Mileage unknown / N/A</span>
+          </label>
+          <label>Asking Price<input id="asking" inputmode="decimal"></label>
+          <label>ZIP Code<input id="zip" maxlength="5" inputmode="numeric"></label>
+          <label>Seller<input id="seller"></label>
+          <label>Title<select id="title"><option>Clean</option><option>Salvage</option><option>Rebuilt</option><option>Other / Unknown</option></select></label>
+          <label>Keys<input id="keys" inputmode="numeric"></label>
+          <label>Cold on Arrival<select id="cold"><option>Unknown</option><option>Yes</option><option>No</option></select></label>
+          <label>Service Records<select id="records"><option>None</option><option>Some</option><option>Good</option><option>Complete</option></select></label>
+        </div>
+
+        <div class="toolbar inline-toolbar no-print">
+          <button class="btn primary" id="decodeVin">Decode VIN</button>
+          <button class="btn" id="checkRecalls">Check Recalls</button>
+        </div>
+
+        <div id="decodeStatus" class="notice">Select a year or enter a complete 17-character VIN.</div>
+        <div id="recallResults" class="notice hidden"></div>
+      </div>
+
+      <div class="page-actions no-print">
+        <button class="btn" data-prev>← Back</button>
+        <button class="btn primary" data-next>Inspection →</button>
+      </div>
+    </section>
+
+    <section id="inspectionPage" class="page">
+      <div class="card hero">
+        <div class="section-head">
+          <div>
+            <div class="muted">PHYSICAL CONDITION</div>
+            <div class="hero-score" id="pct">—</div>
+            <div id="grade">No scored checks yet</div>
+          </div>
+          <div class="hero-side">
+            <div class="muted">Inspection Coverage</div>
+            <b id="completionPct">0%</b>
+            <div class="muted"><span id="answeredCount">0</span>/<span id="applicableCount">0</span> completed</div>
+          </div>
+        </div>
+
+        <div class="progress"><div id="scorebar"></div></div>
+
+        <div class="metrics">
+          <div class="metric"><div class="muted">Maintenance Confidence</div><div class="v" id="maintenanceScore">—</div><div class="muted" id="maintenanceLabel">Not assessed</div></div>
+          <div class="metric"><div class="muted">Transaction / History</div><div class="v" id="transactionStatus">Pending</div><div class="muted" id="transactionFlags">No checks completed</div></div>
+          <div class="metric"><div class="muted">Critical Red Flags</div><div class="v" id="redFlagCount">0</div></div>
+          <div class="metric"><div class="muted">Priority Modules</div><div class="v" id="priorityCount">0</div><div class="muted" id="recommendedCount">0 recommended</div></div>
+        </div>
+      </div>
+
+      <div class="card inspection-controls">
+        <div class="title">Choose Inspection Depth</div>
+        <div class="hint">
+          Untouched modules stay optional. Once you start a module, complete every
+          check in that module, using N/A for equipment that is not present.
+        </div>
+        <div class="depth-buttons">
+          <button type="button" data-depth="targeted">Targeted</button>
+          <button type="button" data-depth="standard" class="active">Standard</button>
+          <button type="button" data-depth="detailed">Detailed</button>
+        </div>
+        <div id="depthNote" class="depth-note"></div>
+      </div>
+
+      <div id="vehicleIntel" class="card intelligence-card"></div>
+
+      <div class="card legend-card">
+        <b>Section completion</b>
+        <span>N/A counts as answered for completion, but is excluded from condition scoring.</span>
+        <div><em>3</em> Good / Normal · <em>2</em> Moderate / Concern · <em>1</em> Poor / Needs Attention · <em>N/A</em> Not equipped / not applicable</div>
+      </div>
+
+      <div id="inspectionGroups"></div>
+
+      <div class="page-actions no-print">
+        <button class="btn" data-prev>← Vehicle</button>
+        <button class="btn primary" data-next>Next →</button>
+      </div>
+    </section>
+
+    <section id="reconPage" class="page value-page">
+      <div class="card">
+        <div class="title">Reconditioning Plan</div>
+        <div class="hint">Standard rough allowances are editable. Recommended and Required items feed the known recon total.</div>
+
+        <div class="scroll table-wrap">
+          <table>
+            <thead><tr><th>Item</th><th>Status</th><th>Standard</th><th>Your Cost</th><th>Used</th></tr></thead>
+            <tbody id="reconBody"></tbody>
+          </table>
+        </div>
+
+        <div class="results">
+          <div class="metric"><div class="muted">Required Repairs</div><div class="v" id="requiredRecon">$0</div></div>
+          <div class="metric"><div class="muted">Recommended</div><div class="v" id="recommendedRecon">$0</div></div>
+          <div class="metric"><div class="muted">Cosmetic / Prep</div><div class="v" id="cosmeticRecon">$0</div></div>
+          <div class="metric"><div class="muted">Known Recon</div><div class="v" id="reconTotal">$0</div></div>
+        </div>
+
+        <div class="grid3 section-gap">
+          <label>
+            Unknown Repair / Risk Reserve
+            <input id="contingency" inputmode="decimal" placeholder="0">
+            <span class="field-help">Reserve for unexpected repair costs you may have missed.</span>
+          </label>
+          <div class="metric"><div class="muted">Unknown / Risk Items</div><div class="v" id="unknownReconCount">0</div></div>
+          <div class="metric"><div class="muted">Potential All-In Recon</div><div class="v" id="reconRisk">$0</div></div>
+        </div>
+      </div>
+
+      <div class="page-actions no-print">
+        <button class="btn" data-prev>← Inspection</button>
+        <button class="btn primary" data-next>Market →</button>
+      </div>
+    </section>
+
+    <section id="marketPage" class="page value-page">
+      <div class="card">
+        <div class="title">Local Market & Value References</div>
+        <div class="hint">Manual market references only. No paid API key is required.</div>
+
+        <div class="grid4 field-grid">
+          <label>ZIP<input id="marketZip" maxlength="5"></label>
+          <label>Radius<input id="marketRadius" value="50"></label>
+          <label>Comparable Mileage<input id="compMileage"></label>
+          <label>Notes<input id="marketNotes"></label>
+        </div>
+
+        <div class="toolbar inline-toolbar">
+          <button class="btn primary" id="runMarketSearch">Open Local Search</button>
+          <button class="btn" id="refreshMarketLinks">Refresh Links</button>
+        </div>
+
+        <div id="marketStatus" class="notice">Confirm vehicle details and ZIP, then enter market references below.</div>
+
+        <div class="grid4 market-grid section-gap">
+          <div class="source"><b>KBB</b><div class="grid2"><label>Trade<input id="kbbTrade"></label><label>Private<input id="kbbPrivate"></label></div><a id="openKbb" target="_blank" rel="noopener">Open KBB</a></div>
+          <div class="source"><b>Edmunds</b><div class="grid2"><label>Trade<input id="edmundsTrade"></label><label>Private<input id="edmundsPrivate"></label></div><a id="openEdmunds" target="_blank" rel="noopener">Open Edmunds</a></div>
+          <div class="source"><b>Dealer Comps</b><div class="grid2"><label>Comp #1<input id="dealer1"></label><label>Comp #2<input id="dealer2"></label></div><a id="openCarGurus" target="_blank" rel="noopener">Open CarGurus Search</a></div>
+          <div class="source"><b>Private / Wholesale</b><div class="grid2"><label>Private Comp<input id="privateComp"></label><label>Instant / Wholesale<input id="instantOffer"></label></div><a id="openSearch" target="_blank" rel="noopener">Search Web</a></div>
+        </div>
+
+        <div class="results">
+          <div class="metric"><div class="muted">Trade Average</div><div class="v" id="guideTradeAvg">$0</div></div>
+          <div class="metric"><div class="muted">Private Average</div><div class="v" id="guidePrivateAvg">$0</div></div>
+          <div class="metric"><div class="muted">Local Comp Average</div><div class="v" id="localCompAvg">$0</div></div>
+          <div class="metric"><div class="muted">Condition-Adjusted</div><div class="v" id="scoreAdjustedMarket">$0</div></div>
+        </div>
+      </div>
+
+      <div class="page-actions no-print">
+        <button class="btn" data-prev>← Recon</button>
+        <button class="btn primary" data-next>Value →</button>
+      </div>
+    </section>
+
+    <section id="dealPage" class="page value-page">
+      <div class="card">
+        <div class="title">Value & Price Analysis</div>
+        <div class="hint" id="dealModeHint">Complete the selected buy or sell analysis.</div>
+
+        <div class="analysis-tabs">
+          <button class="analysis-tab" data-analysis-mode="sell">Selling</button>
+          <button class="analysis-tab" data-analysis-mode="buy">Buying</button>
+        </div>
+
+        <div id="sellAnalysis">
+          <div class="plain-guide"><div class="plain-guide-title">Selling: what these numbers mean</div><p>Enter what the car is worth now, what it could be worth after planned work, and what you realistically expect to sell it for.</p></div>
+
+          <div class="grid4 field-grid">
+            <label>Current As-Is Value<input id="sellAsIs"><span class="field-help">What the vehicle is realistically worth today before repairs.</span></label>
+            <label>Post-Recon Market Value<input id="sellPostRecon"><span class="field-help">What it could reasonably be worth after planned work.</span></label>
+            <label>Recommended List Price<input id="sellList"><span class="field-help">The advertised asking price.</span></label>
+            <label>Expected Sale Price<input id="sellTarget"><span class="field-help">What you realistically expect a buyer to pay.</span></label>
+            <label>Quick-Sale Price<input id="sellQuick"></label>
+            <label>Seller Minimum Net<input id="sellFloor"></label>
+            <label>Other Selling Costs<input id="sellCosts"></label>
+            <label>Recon Strategy<select id="sellReconMode"><option value="all">Complete Planned Recon</option><option value="required">Required Only</option><option value="none">Sell As-Is</option></select></label>
+          </div>
+
+          <div class="grid4 section-gap">
+            <label>Broker Fee Type<select id="brokerType"><option value="none">None</option><option value="flat">Flat Fee</option><option value="percent">Commission %</option></select></label>
+            <label>Flat Broker Fee<input id="brokerFlat"></label>
+            <label>Commission %<input id="brokerPercent"></label>
+            <label>Minimum Commission<input id="brokerMinimum"></label>
+          </div>
+
+          <div class="results">
+            <div class="metric"><div class="muted">Recon Included</div><div class="v" id="sellReconUsed">$0</div></div>
+            <div class="metric"><div class="muted">Expected Net Proceeds</div><div class="v" id="sellNet">$0</div></div>
+            <div class="metric"><div class="muted">Broker Earnings</div><div class="v" id="brokerEarnings">$0</div></div>
+            <div class="metric"><div class="muted">Seller Net After Broker</div><div class="v" id="sellerNetAfterBroker">$0</div></div>
+            <div class="metric"><div class="muted">Net Recon Benefit</div><div class="v" id="reconBenefit">$0</div></div>
+            <div class="metric"><div class="muted">Pricing Check</div><div class="v" id="pricingCheck">—</div></div>
+          </div>
+        </div>
+
+        <div id="buyAnalysis" class="hidden">
+          <div class="plain-guide"><div class="plain-guide-title">Buying: what these numbers mean</div><p>Enter what the seller wants, what you plan to pay, expected recon and a realistic resale target. The app calculates your basis and maximum buy.</p></div>
+
+          <div class="grid4 field-grid">
+            <label>Seller Asking Price<input id="buyAsk"><span class="field-help">What the seller is currently asking.</span></label>
+            <label>Target Purchase Price<input id="buyTarget"><span class="field-help">What you actually plan to offer or pay.</span></label>
+            <label>Expected Resale Price<input id="buyResale"><span class="field-help">Your realistic resale target.</span></label>
+            <label>Required Profit<input id="requiredProfit"><span class="field-help">Minimum profit you want the deal to produce.</span></label>
+            <label>Tax / Title / Registration<input id="buyFees"></label>
+            <label>Other Acquisition Costs<input id="buyAcqCosts"></label>
+            <label>Selling Costs<input id="buySellingCosts"></label>
+            <label>Use Recon<select id="buyReconMode"><option value="all">Potential All-In Recon</option><option value="known">Known Recon Only</option><option value="required">Required Only</option></select></label>
+          </div>
+
+          <div class="results">
+            <div class="metric"><div class="muted">Recon Used</div><div class="v" id="buyReconUsed">$0</div></div>
+            <div class="metric"><div class="muted">Total Basis</div><div class="v" id="buyBasis">$0</div></div>
+            <div class="metric"><div class="muted">Projected Profit</div><div class="v" id="buyProfit">$0</div></div>
+            <div class="metric"><div class="muted">ROI</div><div class="v" id="buyROI">0%</div></div>
+            <div class="metric"><div class="muted">Margin on Sale</div><div class="v" id="buyMargin">0%</div></div>
+            <div class="metric"><div class="muted">Maximum Buy</div><div class="v" id="calculatedMaxBuy">$0</div></div>
+            <div class="metric"><div class="muted">Gap vs Ask</div><div class="v" id="negotiationGap">$0</div></div>
+            <div class="metric"><div class="muted">Deal Assessment</div><div class="v" id="dealAssessment">—</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="title">Final Decision</div>
+        <div class="grid3">
+          <label>Decision<select id="decision"><option>Undecided</option><option>Buy</option><option>Negotiate</option><option>Private Sale</option><option>Consign</option><option>Trade / Wholesale</option><option>Pass</option></select></label>
+          <label>Status<select id="status"><option>In Progress</option><option>Complete</option><option>Needs PPI</option><option>Rejected</option></select></label>
+          <label>Follow-Up<input id="followup"></label>
+        </div>
+        <label class="block-label">Key Defects / Negotiation Notes<textarea id="notes"></textarea></label>
+      </div>
+
+      <div class="page-actions no-print">
+        <button class="btn" data-prev>← Market</button>
+        <button class="btn primary" data-next>View Report →</button>
+      </div>
+    </section>
+
+    <section id="savedPage" class="page">
+      <div class="card">
+        <div class="title">Saved Vehicles</div>
+        <div class="toolbar inline-toolbar">
+          <button class="btn" id="exportCurrent">Export Current</button>
+          <button class="btn" id="exportAll">Export All</button>
+          <label class="btn import-label">Import Backup<input id="importFile" type="file" accept="application/json"></label>
+        </div>
+        <div id="savedList"></div>
+      </div>
+
+      <div class="card">
+        <div class="title">Compare Vehicles</div>
+        <div id="comparePicker"></div>
+        <div class="scroll"><table id="compareTable"></table></div>
+      </div>
+
+      <div class="page-actions no-print">
+        <button class="btn" data-prev>← Back</button>
+        <button class="btn primary" id="savedOverview">Overview</button>
+      </div>
+    </section>
+  </main>
+
+  <div id="appScrim" class="app-drawer-scrim"></div>
+
+  <aside id="appDrawer" class="app-drawer no-print">
+    <div class="drawer-head">
+      <div class="drawer-emblem">✓</div>
+      <div><div class="drawer-title">Vehicle Scorecard</div><div class="drawer-version" id="drawerVersion">v11.0 · Production</div></div>
+      <button id="appClose" class="drawer-close" aria-label="Close menu">×</button>
+    </div>
+
+    <div class="drawer-section-label">NAVIGATE</div>
+    <div id="drawerPages" class="drawer-pages"></div>
+
+    <div class="drawer-section-label">APP</div>
+    <div class="drawer-tools">
+      <div id="buildStatus" class="build-status">Current build: v11.0</div>
+      <div class="theme-row"><span id="themeLabel">Dark Mode Off</span><button id="themeSwitch" class="theme-switch" aria-label="Toggle dark mode"></button></div>
+      <button id="drawerSave" class="drawer-tool">Save Current Vehicle</button>
+      <button id="drawerPrint" class="drawer-tool">Print / Save PDF</button>
+      <button id="drawerUpdate" class="drawer-tool primary">Update / Refresh App</button>
+    </div>
+  </aside>
+
+  <div id="appToast" class="update-toast"></div>
+
+  <script src="js/core.js"></script>
+  <script src="js/inspection.js"></script>
+  <script src="js/intelligence.js"></script>
+  <script src="js/ui.js"></script>
+</body>
+</html>

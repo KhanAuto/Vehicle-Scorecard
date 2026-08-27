@@ -1,0 +1,49 @@
+CLEAN REPOSITORY REPLACEMENT CHECKLIST
+
+UPLOAD THE CONTENTS OF THIS ZIP TO THE REPOSITORY ROOT.
+
+KEEP ONLY THESE PRODUCTION FILES:
+- index.html
+- styles.css
+- js/core.js
+- js/inspection.js
+- js/intelligence.js
+- js/ui.js
+- service-worker.js
+- manifest.webmanifest
+- version.json
+- README.md
+- icon-180.png
+- icon-192.png
+- icon-512.png
+
+DELETE THESE OLD RUNTIME FILES AFTER THE NEW BUILD IS PRESENT:
+- README.txt
+- app-shell.html
+- app.css
+- app.js
+- build.js
+- dashboard-v107.js
+- inspection-count-v106.js
+- inspection.css
+- inspection.js
+- intelligence.js
+- make-filter-v104.js
+- navigation-v103.js
+- navigation.js
+- priority-highlight-v106.css
+- priority-highlight-v106.js
+- profile-flow-v106.js
+- theme-v108.js
+- workflow-v109.css
+- workflow-v109.js
+- any other older version-specific patch file
+
+IMPORTANT:
+Upload the new files FIRST, including the js/ folder.
+Then delete the obsolete root files.
+
+GitHub Pages should continue serving from main / repository root.
+
+Saved vehicle data is browser localStorage, not repository data.
+The rebuild preserves the existing `vehicleScorecardsV2` storage key.
