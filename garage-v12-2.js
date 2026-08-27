@@ -168,7 +168,7 @@
     requestAnimationFrame(()=>{queued=false;enhanceCards();});
   }
 
-  ["scorecard:core-ready","scorecard:dashboardrender","scorecard:vehiclechange","scorecard:pathchange"].forEach(name=>document.addEventListener(name,refresh));
+  ["scorecard:core-ready","scorecard:dashboardrender","scorecard:vehiclechange","scorecard:pathchange","scorecard:garagerender"].forEach(name=>document.addEventListener(name,refresh));
   window.addEventListener("load",refresh,{once:true});
   setTimeout(refresh,100);
 })();

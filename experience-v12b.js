@@ -347,14 +347,21 @@
           <div class="v12-vehicle-badges"><span class="v12-pill blue">${vehicle.assessmentPath === "value" ? "Value Analysis Only" : vehicle.assessmentPath === "inspection" ? "Inspection Only" : "Full Assessment"}</span><span class="v12-pill">${vehicle.mode === "sell" ? "Selling" : vehicle.mode === "buy" ? "Buying" : "Condition"}</span></div>
           <div class="v12-score-row"><div class="v12-score-cell"><small>Condition</small><strong>${score ? `${score}/100` : "Not inspected"}</strong></div><div class="v12-score-cell"><small>Grade</small><strong class="v12-grade-badge ${gradeClass(letter)}">${letter}</strong></div><div class="v12-score-cell"><small>Decision</small><strong>${vehicle.fields?.decision || "In Progress"}</strong></div></div>${progressRail(vehicle)}
         </div>`;
-      card.addEventListener("click", async () => { await APP.loadSaved(vehicle.id); APP.showPage?.("homePage"); });
+      // Card clicks are handled by garage-expand-v123.js so a click expands
+      // the saved vehicle in place instead of loading the VIN/profile workflow.
       list.appendChild(card);
-      hydrateImage(card.querySelector(".v12-vehicle-photo"), vehicle.fields || {});
+      // Photo hydration is owned by garage-v12-2.js. Keeping a single photo
+      // renderer prevents the legacy Commons loader from racing and replacing
+      // the persisted/correct image after navigation or a dashboard re-render.
     });
 
     host.querySelector("#v12New")?.addEventListener("click", () => launchNew("full"));
     host.querySelector("#v12All")?.addEventListener("click", () => APP.showPage?.("savedPage"));
     host.querySelectorAll("[data-v12-launch]").forEach((button) => button.addEventListener("click", () => launchNew(button.dataset.v12Launch)));
+
+    // Notify the garage-specific enhancers after the card DOM has actually
+    // been rebuilt so persisted photos and expand behavior attach to this render.
+    document.dispatchEvent(new CustomEvent("scorecard:garagerender"));
   }
 
   function renderPricingPreview() {
@@ -444,7 +451,7 @@
     hero.className = "v12-vehicle-hero";
     hero.innerHTML = `<div class="v12-hero-photo"><div class="v12-photo-empty">Finding representative image…</div></div><div><div class="v12-hero-title">${[vehicle.year,vehicle.make,vehicle.model,vehicle.trim].filter(Boolean).join(" ")}</div><div class="v12-hero-meta">${vehicle.mileage ? `${Number(vehicle.mileage).toLocaleString()} miles` : "Mileage unknown"}${APP.value("vin") ? ` · ${APP.value("vin")}` : ""}</div><div class="v12-hero-tags"><span class="v12-pill blue">${pathName()}</span><span class="v12-pill">${mode === "buy" ? "Buying" : mode === "sell" ? "Selling" : "Condition"}</span><span class="v12-pill ${c.flags.count ? "amber" : "green"}">${c.flags.count} critical flags</span></div></div>`;
     report.prepend(hero);
-    hydrateImage(hero.querySelector(".v12-hero-photo"), vehicle);
+    // Hero photo hydration is handled by garage-v12-2.js as well.
 
     const sections = document.createElement("div");
     sections.className = "v12-dashboard-sections";
