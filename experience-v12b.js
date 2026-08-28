@@ -315,10 +315,10 @@
     const hasValue = Boolean(Number(vehicle.fields?.buyAsk) || Number(vehicle.fields?.sellTarget) || Number(vehicle.fields?.buyResale));
     const hasRecon = Object.values(vehicle.recon || {}).some((x) => x.status && x.status !== "none");
     const steps = p === "inspection"
-      ? [["Vehicle",true],["Inspection",inspected],["Report",inspected]]
+      ? [["Vehicle",true],["Inspect",inspected],["Report",inspected]]
       : p === "value"
         ? [["Vehicle",true],["Market",hasMarket],["Value",hasValue],["Report",hasValue]]
-        : [["Vehicle",true],["Inspection",inspected],["Recon",hasRecon],["Market",hasMarket],["Value",hasValue],["Report",inspected && hasValue]];
+        : [["Vehicle",true],["Inspect",inspected],["Recon",hasRecon],["Market",hasMarket],["Value",hasValue],["Report",inspected && hasValue]];
     const firstOpen = steps.findIndex((x) => !x[1]);
     return `<div class="v12-progress-rail" aria-label="Report module progress">${steps.map(([label, done], i) => `<div class="v12-progress-node ${done ? "done" : i === firstOpen ? "active" : ""}" title="${label}"><span class="v12-progress-dot">${done ? "✓" : ""}</span><small>${label}</small></div>`).join("")}</div>`;
   }
