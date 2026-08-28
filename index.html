@@ -221,21 +221,33 @@
         <div class="grid4 field-grid">
           <label>ZIP<input id="marketZip" maxlength="5"></label>
           <label>Radius<input id="marketRadius" value="50"></label>
-          <label>Comparable Mileage<input id="compMileage"></label>
+          <label>Subject Mileage<input id="compMileage" readonly><span class="field-help">Uses the vehicle mileage for comparable adjustments.</span></label>
           <label>Notes<input id="marketNotes"></label>
         </div>
         <div class="toolbar inline-toolbar"><button class="btn primary" id="runMarketSearch">Open Local Search</button><button class="btn" id="refreshMarketLinks">Refresh Links</button></div>
         <div id="marketStatus" class="notice">Confirm vehicle details and ZIP, then enter market references below.</div>
         <div class="grid4 market-grid section-gap">
-          <div class="source"><b>KBB</b><div class="grid2"><label>Trade<input id="kbbTrade"></label><label>Private<input id="kbbPrivate"></label></div><a id="openKbb" target="_blank" rel="noopener">Open KBB</a></div>
-          <div class="source"><b>Edmunds</b><div class="grid2"><label>Trade<input id="edmundsTrade"></label><label>Private<input id="edmundsPrivate"></label></div><a id="openEdmunds" target="_blank" rel="noopener">Open Edmunds</a></div>
-          <div class="source"><b>Dealer Comps</b><div class="grid2"><label>Comp #1<input id="dealer1"></label><label>Comp #2<input id="dealer2"></label></div><a id="openCarGurus" target="_blank" rel="noopener">Open CarGurus Search</a></div>
-          <div class="source"><b>Private / Wholesale</b><div class="grid2"><label>Private Comp<input id="privateComp"></label><label>Instant / Wholesale<input id="instantOffer"></label></div><a id="openSearch" target="_blank" rel="noopener">Search Web</a></div>
+          <div class="source"><b>KBB Guide</b><div class="grid2"><label>Trade Midpoint<input id="kbbTrade"></label><label>Private Midpoint<input id="kbbPrivate"></label></div><a id="openKbb" target="_blank" rel="noopener">Open KBB</a></div>
+          <div class="source"><b>Edmunds Guide</b><div class="grid2"><label>Trade Midpoint<input id="edmundsTrade"></label><label>Private Midpoint<input id="edmundsPrivate"></label></div><a id="openEdmunds" target="_blank" rel="noopener">Open Edmunds</a></div>
+          <div class="source"><b>Trade / Instant Floor</b><div class="grid2"><label>Lowest Credible Offer<input id="instantOffer"></label></div><span class="field-help">Used as the conservative exit floor, not fair-market value.</span></div>
+          <div class="source"><b>Comparable Search</b><div class="field-help">Enter the closest year and mileage you can find. Each listing is normalized to the assessed vehicle.</div><a id="openCarGurus" target="_blank" rel="noopener">Search Dealers</a><br><a id="openSearch" target="_blank" rel="noopener">Search Private Listings</a></div>
+        </div>
+        <div class="title section-gap">Private-Party Comparables</div><div class="hint">Three listings create a usable private-market median.</div>
+        <div class="grid3 field-grid market-comp-grid">
+          <div class="source"><b>Private #1</b><label>Price<input id="private1Price"></label><label>Year<input id="private1Year"></label><label>Mileage<input id="private1Mileage"></label></div>
+          <div class="source"><b>Private #2</b><label>Price<input id="private2Price"></label><label>Year<input id="private2Year"></label><label>Mileage<input id="private2Mileage"></label></div>
+          <div class="source"><b>Private #3</b><label>Price<input id="private3Price"></label><label>Year<input id="private3Year"></label><label>Mileage<input id="private3Mileage"></label></div>
+        </div>
+        <div class="title section-gap">Dealer Comparables</div><div class="hint">Three listings create a usable dealer-retail median.</div>
+        <div class="grid3 field-grid market-comp-grid">
+          <div class="source"><b>Dealer #1</b><label>Price<input id="dealer1Price"></label><label>Year<input id="dealer1Year"></label><label>Mileage<input id="dealer1Mileage"></label></div>
+          <div class="source"><b>Dealer #2</b><label>Price<input id="dealer2Price"></label><label>Year<input id="dealer2Year"></label><label>Mileage<input id="dealer2Mileage"></label></div>
+          <div class="source"><b>Dealer #3</b><label>Price<input id="dealer3Price"></label><label>Year<input id="dealer3Year"></label><label>Mileage<input id="dealer3Mileage"></label></div>
         </div>
         <div class="results">
-          <div class="metric"><div class="muted">Trade Average</div><div class="v" id="guideTradeAvg">$0</div></div>
-          <div class="metric"><div class="muted">Private Average</div><div class="v" id="guidePrivateAvg">$0</div></div>
-          <div class="metric"><div class="muted">Local Comp Average</div><div class="v" id="localCompAvg">$0</div></div>
+          <div class="metric"><div class="muted">Trade Guide Midpoint</div><div class="v" id="guideTradeAvg">$0</div></div>
+          <div class="metric"><div class="muted">Private Guide Midpoint</div><div class="v" id="guidePrivateAvg">$0</div></div>
+          <div class="metric"><div class="muted">Normalized Local Median</div><div class="v" id="localCompAvg">$0</div></div>
           <div class="metric"><div class="muted">Condition-Adjusted</div><div class="v" id="scoreAdjustedMarket">$0</div></div>
         </div>
       </div>
@@ -361,11 +373,11 @@
 
   <div id="appToast" class="update-toast"></div>
 
-  <script src="core.js?v=12.36"></script>
-  <script src="inspection.js?v=12.36"></script>
-  <script src="intelligence.js?v=12.36"></script>
-  <script src="ui.js?v=12.36"></script>
-  <script src="progressive-v1214.js?v=12.36"></script>
-  <script src="coverage-v1215.js?v=12.36"></script>
+  <script src="core.js?v=12.37"></script>
+  <script src="inspection.js?v=12.37"></script>
+  <script src="intelligence.js?v=12.37"></script>
+  <script src="ui.js?v=12.37"></script>
+  <script src="progressive-v1214.js?v=12.37"></script>
+  <script src="coverage-v1215.js?v=12.37"></script>
 </body>
 </html>
