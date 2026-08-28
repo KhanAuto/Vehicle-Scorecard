@@ -471,21 +471,16 @@
   APP.updateMarket = () => {
     const tradeAverage = average([
       APP.numberFrom("kbbTrade"),
-      APP.numberFrom("edmundsTrade"),
-      APP.numberFrom("instantOffer")
+      APP.numberFrom("edmundsTrade")
     ]);
 
     const privateAverage = average([
       APP.numberFrom("kbbPrivate"),
-      APP.numberFrom("edmundsPrivate"),
-      APP.numberFrom("privateComp")
+      APP.numberFrom("edmundsPrivate")
     ]);
 
-    const localAverage = average([
-      APP.numberFrom("dealer1"),
-      APP.numberFrom("dealer2"),
-      APP.numberFrom("privateComp")
-    ]);
+    const snapshot = APP.marketSnapshot?.();
+    const localAverage = snapshot?.localBaseline || 0;
 
     APP.$("#guideTradeAvg").textContent = APP.money(tradeAverage);
     APP.$("#guidePrivateAvg").textContent = APP.money(privateAverage);
@@ -505,7 +500,7 @@
     }
 
     APP.$("#scoreAdjustedMarket").textContent =
-      APP.money(average([privateAverage, localAverage]) * factor);
+      APP.money(snapshot?.adjusted || average([privateAverage, localAverage]) * factor);
 
     updateLinks();
     updateValue();
@@ -557,12 +552,14 @@
 
     let pricingCheck = "—";
 
-    if (postRecon && sellTarget > postRecon) {
-      pricingCheck = `+${APP.money(sellTarget - postRecon)} over market`;
-    } else if (postRecon && APP.numberFrom("sellAsk") > postRecon) {
-      pricingCheck = `Asking +${APP.money(APP.numberFrom("sellAsk") - postRecon)}`;
-    } else if (postRecon) {
-      pricingCheck = "Aligned";
+    const pricingBasis = APP.value("sellReconMode") === "none" ? asIs : postRecon;
+    const askingPrice = APP.numberFrom("sellAsk");
+    if (pricingBasis && askingPrice) {
+      const gap = askingPrice - pricingBasis;
+      const tolerance = pricingBasis * 0.03;
+      pricingCheck = Math.abs(gap) <= tolerance ? "Aligned with estimate" : gap > 0
+        ? `${APP.money(gap)} above ${APP.value("sellReconMode") === "none" ? "as-is" : "post-recon"} estimate`
+        : `${APP.money(Math.abs(gap))} below ${APP.value("sellReconMode") === "none" ? "as-is" : "post-recon"} estimate`;
     }
 
     APP.$("#pricingCheck").textContent = pricingCheck;
@@ -636,7 +633,9 @@
     "year", "make", "model", "trim", "mileage", "vin", "asking", "zip",
     "seller", "title", "keys", "cold", "records", "contingency", "marketZip",
     "marketRadius", "compMileage", "marketNotes", "kbbTrade", "kbbPrivate",
-    "edmundsTrade", "edmundsPrivate", "dealer1", "dealer2", "privateComp",
+    "edmundsTrade", "edmundsPrivate",
+    "private1Price", "private1Year", "private1Mileage", "private2Price", "private2Year", "private2Mileage", "private3Price", "private3Year", "private3Mileage",
+    "dealer1Price", "dealer1Year", "dealer1Mileage", "dealer2Price", "dealer2Year", "dealer2Mileage", "dealer3Price", "dealer3Year", "dealer3Mileage",
     "instantOffer", "sellAsk", "sellAsIs", "sellPostRecon", "sellList", "sellTarget",
     "sellQuick", "sellFloor", "sellCosts", "sellReconMode", "buyIntent", "buyAsk", "buyTarget",
     "buyResale", "requiredProfit", "buyFees", "buyAcqCosts", "buySellingCosts",
