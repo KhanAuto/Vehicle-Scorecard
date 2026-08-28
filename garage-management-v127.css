@@ -7,3 +7,4 @@
 #drawerPages .drawer-nav-group summary::-webkit-details-marker{display:none}.drawer-group-chevron{transition:transform .18s ease}.drawer-nav-group:not([open]) .drawer-group-chevron{transform:rotate(-90deg)}
 #drawerPages .drawer-nav-children{display:grid;padding:0 6px 6px;border-top:1px solid #20344a}.drawer-nav-children .drawer-child{padding-left:18px!important;border-radius:9px!important;background:transparent!important}.drawer-nav-children .drawer-child .txt{font-size:11px}
 @media(max-width:760px){.saved-bulk-bar>span{width:100%;order:2}.saved-bulk-bar .btn{flex:1 1 130px}.saved-card{padding-left:42px}.v123-actions .v123-remove{grid-column:1/-1}}
+.v123-overview-grid>div>span{display:block;margin-top:4px;color:#7f91a8;font-size:8px;line-height:1.35}.v12-progress-node{position:relative;padding-bottom:17px}.v12-progress-node small{position:absolute;left:0;bottom:0;color:#8192a7;font-size:7px;white-space:nowrap}.v12-progress-node.done small{color:#6fcf98}
