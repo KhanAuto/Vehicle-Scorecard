@@ -302,8 +302,10 @@
   }
 
   function savedScore(vehicle) {
-    const raw = String(vehicle.score?.pct || "").replace(/[^0-9]/g, "");
-    return Number(raw) || 0;
+    const raw = String(vehicle.score?.pct ?? "").trim();
+    const match = raw.match(/-?\d+(?:\.\d+)?/);
+    if (!match) return 0;
+    return Math.min(100, Math.max(0, Number(match[0]) || 0));
   }
 
   function progressRail(vehicle) {
