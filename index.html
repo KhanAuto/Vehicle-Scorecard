@@ -300,23 +300,24 @@
           </div>
         </div>
         <div id="buyAnalysis" class="hidden">
-          <div class="plain-guide"><div class="plain-guide-title">Buying: what these numbers mean</div><p>Enter what the seller wants, what you plan to pay, expected recon and a realistic resale target. The app calculates your basis and maximum buy.</p></div>
+          <div class="plain-guide"><div class="plain-guide-title">Buying: what these numbers mean</div><p>Choose whether this is for personal ownership or resale. Personal-use analysis compares the all-in purchase cost with condition-adjusted market value; profit metrics only apply to resale/flip purchases.</p></div>
           <div class="grid4 field-grid">
-            <label>Seller Asking Price<input id="buyAsk"><span class="field-help">What the seller is currently asking.</span></label>
+            <label>Purchase Intent<select id="buyIntent"><option value="ownership">Personal Use / Ownership</option><option value="flip">Resale / Flip</option></select><span class="field-help">Controls whether the analysis evaluates ownership value or resale profitability.</span></label>
+            <label>List Price<input id="buyAsk"><span class="field-help">The vehicle's advertised price.</span></label>
             <label>Target Purchase Price<input id="buyTarget"><span class="field-help">What you actually plan to offer or pay.</span></label>
-            <label>Expected Resale Price<input id="buyResale"><span class="field-help">Your realistic resale target.</span></label>
-            <label>Required Profit<input id="requiredProfit"><span class="field-help">Minimum profit you want the deal to produce.</span></label>
+            <label><span id="buyValueFieldLabel">Estimated Market Value</span><input id="buyResale"><span class="field-help" id="buyValueFieldHelp">A realistic condition-adjusted value for comparison with your all-in cost.</span></label>
+            <label data-buy-flip-only>Required Profit<input id="requiredProfit"><span class="field-help">Minimum profit you want the resale deal to produce.</span></label>
             <label>Tax / Title / Registration<input id="buyFees"></label>
             <label>Other Acquisition Costs<input id="buyAcqCosts"></label>
-            <label>Selling Costs<input id="buySellingCosts"></label>
+            <label data-buy-flip-only>Selling Costs<input id="buySellingCosts"></label>
             <label>Use Recon<select id="buyReconMode"><option value="all">Potential All-In Recon</option><option value="known">Known Recon Only</option><option value="required">Required Only</option></select></label>
           </div>
           <div class="results">
             <div class="metric"><div class="muted">Recon Used</div><div class="v" id="buyReconUsed">$0</div></div>
             <div class="metric"><div class="muted">Total Basis</div><div class="v" id="buyBasis">$0</div></div>
-            <div class="metric"><div class="muted">Projected Profit</div><div class="v" id="buyProfit">$0</div></div>
-            <div class="metric"><div class="muted">ROI</div><div class="v" id="buyROI">0%</div></div>
-            <div class="metric"><div class="muted">Margin on Sale</div><div class="v" id="buyMargin">0%</div></div>
+            <div class="metric"><div class="muted" id="buyProfitLabel">Value Position</div><div class="v" id="buyProfit">$0</div></div>
+            <div class="metric"><div class="muted" id="buyRoiLabel">Value Position %</div><div class="v" id="buyROI">0%</div></div>
+            <div class="metric" data-buy-flip-only><div class="muted">Margin on Sale</div><div class="v" id="buyMargin">0%</div></div>
             <div class="metric"><div class="muted">Maximum Buy</div><div class="v" id="calculatedMaxBuy">$0</div></div>
             <div class="metric"><div class="muted">Gap vs Ask</div><div class="v" id="negotiationGap">$0</div></div>
             <div class="metric"><div class="muted">Deal Assessment</div><div class="v" id="dealAssessment">—</div></div>
@@ -367,11 +368,11 @@
 
   <div id="appToast" class="update-toast"></div>
 
-  <script src="core.js?v=12.23"></script>
-  <script src="inspection.js?v=12.23"></script>
-  <script src="intelligence.js?v=12.23"></script>
-  <script src="ui.js?v=12.23"></script>
-  <script src="progressive-v1214.js?v=12.23"></script>
-  <script src="coverage-v1215.js?v=12.23"></script>
+  <script src="core.js?v=12.24"></script>
+  <script src="inspection.js?v=12.24"></script>
+  <script src="intelligence.js?v=12.24"></script>
+  <script src="ui.js?v=12.24"></script>
+  <script src="progressive-v1214.js?v=12.24"></script>
+  <script src="coverage-v1215.js?v=12.24"></script>
 </body>
 </html>
