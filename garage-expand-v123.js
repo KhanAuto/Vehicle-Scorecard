@@ -43,6 +43,7 @@
         ${targetButton("View Recon","reconPage")}
         ${targetButton("View Market","marketPage")}
         ${targetButton("View Value Analysis","dealPage")}
+        <button type="button" class="btn v123-remove" data-v123-remove>Remove from Garage</button>
       </div>
       <div class="v1214-upgrade">
         <div class="v1214-upgrade-title">Build on this assessment</div>
@@ -104,6 +105,13 @@
     const vehicle = savedFor(card);
     if (!vehicle) return;
 
+    if (action.hasAttribute("data-v123-remove")) {
+      if (!confirm(`Remove ${nameFor(vehicle)} from My Garage?`)) return;
+      APP.saveList?.((APP.getSaved?.() || []).filter((saved) => String(saved.id) !== String(vehicle.id)));
+      APP.toast?.("Vehicle removed from My Garage");
+      return;
+    }
+
     const upgradeKind = action.dataset.v1214Upgrade;
     if (upgradeKind) {
       const saved = APP.getSaved?.().find((v) => String(v.id) === String(vehicle.id));
@@ -133,7 +141,7 @@
     if (document.documentElement.dataset.v121ModuleRouter === "1") return;
     document.documentElement.dataset.v121ModuleRouter = "1";
     document.addEventListener("click", (event) => {
-      const action = event.target.closest("[data-v1214-upgrade], [data-v123-page]");
+      const action = event.target.closest("[data-v1214-upgrade], [data-v123-page], [data-v123-remove]");
       if (!action) return;
       const card = action.closest(".v12-vehicle-card");
       if (!card) return;
