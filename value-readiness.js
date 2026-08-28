@@ -8,6 +8,7 @@
     sell: {
       required: [],
       recommended: [
+        { id: "sellAsk", label: "Your Asking Price", why: "Compares your advertised price with the calculated market range." },
         { id: "sellFloor", label: "Minimum Take-Home", why: "Compares the projected proceeds with your minimum acceptable result." },
         { id: "sellCosts", label: "Other Selling Costs", why: "Improves seller take-home accuracy." },
         { id: "sellReconMode", label: "Recon Strategy", why: "Controls which recon costs are included in the sale analysis." }
