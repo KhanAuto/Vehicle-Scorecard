@@ -110,15 +110,21 @@
 
     const c = condition();
     const inspected = c.pct !== null && c.coverage >= 25;
-    const conditionFactor = !inspected ? 1 :
-      c.pct >= 95 ? 1.03 : c.pct >= 90 ? 1.01 : c.pct >= 85 ? 0.98 :
-      c.pct >= 80 ? 0.95 : c.pct >= 75 ? 0.91 : c.pct >= 70 ? 0.87 :
-      c.pct >= 60 ? 0.80 : 0.70;
+    const valueOnly = path() === "value";
+    const reportedCondition = valueOnly ? String(APP.value?.("knownCondition") || "") : "";
+    const reportedFactors = { excellent: 1.03, good: 1.00, fair: 0.95, poor: 0.85 };
+    const conditionFactor = inspected
+      ? (c.pct >= 95 ? 1.03 : c.pct >= 90 ? 1.01 : c.pct >= 85 ? 0.98 :
+        c.pct >= 80 ? 0.95 : c.pct >= 75 ? 0.91 : c.pct >= 70 ? 0.87 :
+        c.pct >= 60 ? 0.80 : 0.70)
+      : (reportedFactors[reportedCondition] || 1);
+    const conditionBasis = inspected ? "inspected" : reportedCondition ? "reported" : "assumed";
 
     const recon = APP.getReconTotals?.() || { required: 0, known: 0 };
+    const knownRepairEstimate = valueOnly ? num("knownRepairEstimate") : 0;
     const fairEstimate = baseline * mileageFactor;
     const adjusted = fairEstimate * conditionFactor;
-    const asIs = Math.max(0, adjusted - (recon.required || 0));
+    const asIs = Math.max(0, adjusted - (inspected ? (recon.required || 0) : knownRepairEstimate));
     const expectedSale = adjusted ? adjusted * 0.985 : 0;
     const list = adjusted ? adjusted * 1.035 : 0;
     const quick = asIs ? asIs * 0.91 : 0;
@@ -127,7 +133,7 @@
       ? refs >= 4 && c.coverage >= 75 ? "High" : refs >= 2 ? "Moderate" : "Low"
       : refs >= 4 ? "Moderate" : refs >= 2 ? "Preliminary" : "Low";
 
-    return { trade, privateGuide, local, baseline, fairEstimate, adjusted, asIs, expectedSale, list, quick, refs, confidence, inspected, mileageFactor, condition: c, recon };
+    return { trade, privateGuide, local, baseline, fairEstimate, adjusted, asIs, expectedSale, list, quick, refs, confidence, inspected, mileageFactor, condition: c, recon, conditionBasis, reportedCondition, knownRepairEstimate };
   }
 
   APP.marketSnapshot = market;
@@ -301,7 +307,7 @@
       ? [["Vehicle",true],["Inspection",inspected],["Report",inspected]]
       : p === "value"
         ? [["Vehicle",true],["Market",hasMarket],["Value",hasValue],["Report",hasValue]]
-        : [["Vehicle",true],["Market",hasMarket],["Value",hasValue],["Inspection",inspected],["Recon",hasRecon],["Report",inspected && hasValue]];
+        : [["Vehicle",true],["Inspection",inspected],["Recon",hasRecon],["Market",hasMarket],["Value",hasValue],["Report",inspected && hasValue]];
     const firstOpen = steps.findIndex((x) => !x[1]);
     return `<div class="v12-progress-rail">${steps.map(([label, done], i) => `<div class="v12-progress-node ${done ? "done" : i === firstOpen ? "active" : ""}" title="${label}"><span class="v12-progress-dot">${done ? "✓" : ""}</span></div>`).join("")}</div>`;
   }
@@ -328,7 +334,7 @@
       <div class="v12-start-panel">
         <button class="v12-start-choice inspection" data-v12-launch="inspection"><span class="v12-choice-icon">✓</span><b>Inspection Only</b><span>Vehicle is in front of you. Focus on physical condition, maintenance and risk.</span></button>
         <button class="v12-start-choice value" data-v12-launch="value"><span class="v12-choice-icon">$</span><b>Value Analysis Only</b><span>Screen an online listing first and decide whether it is worth pursuing.</span></button>
-        <button class="v12-start-choice full" data-v12-launch="full"><span class="v12-choice-icon">◆</span><b>Full Assessment</b><span>Start with pricing, add the physical inspection, then produce the complete decision report.</span></button>
+        <button class="v12-start-choice full" data-v12-launch="full"><span class="v12-choice-icon">◆</span><b>Full Assessment</b><span>Inspect first, capture recon needs, then use market and value data for the complete decision report.</span></button>
       </div>
       <div class="v12-garage-list"></div>`;
 
@@ -375,7 +381,7 @@
     }
     const m = market();
     panel.innerHTML = `
-      <div class="v12-price-preview-head"><div><div class="v12-price-preview-title">Preliminary Pricing Assessment</div><div class="v12-price-preview-sub">${m.inspected ? `Refined using the ${m.condition.pct}/100 (${m.condition.letter}) physical inspection.` : "Before inspection, the app assumes fair/typical condition for the vehicle's age and mileage."}</div></div><span class="v12-pill ${m.refs >= 3 ? "green" : "amber"}">${m.confidence} confidence</span></div>
+      <div class="v12-price-preview-head"><div><div class="v12-price-preview-title">Preliminary Pricing Assessment</div><div class="v12-price-preview-sub">${m.conditionBasis === "inspected" ? `Refined using the ${m.condition.pct}/100 (${m.condition.letter}) physical inspection.` : m.conditionBasis === "reported" ? `Uses the user-entered ${m.reportedCondition} reported condition; no physical inspection has been completed.` : "Uses a fair/typical condition assumption because no inspection or reported condition is available."}</div></div><span class="v12-pill ${m.refs >= 3 ? "green" : "amber"}">${m.confidence} confidence</span></div>
       <div class="v12-price-grid"><div class="v12-price-cell"><small>Market baseline</small><strong>${money(m.baseline)}</strong></div><div class="v12-price-cell"><small>Mileage-adjusted</small><strong>${money(m.fairEstimate)}</strong></div><div class="v12-price-cell"><small>Estimated as-is</small><strong>${money(m.asIs)}</strong></div><div class="v12-price-cell"><small>References entered</small><strong>${m.refs}</strong></div></div>`;
   }
 
@@ -384,6 +390,14 @@
     if (!card) return;
     const mode = APP.getMode?.() === "sell" ? "sell" : "buy";
     const m = market();
+    const valueContext = document.getElementById("valueOnlyConditionCard");
+    if (valueContext) valueContext.classList.toggle("hidden", path() !== "value");
+    const basis = document.getElementById("valueConditionBasis");
+    if (basis) {
+      basis.textContent = m.conditionBasis === "reported"
+        ? `Condition basis: user-entered ${m.reportedCondition} reported condition${m.knownRepairEstimate ? `; ${money(m.knownRepairEstimate)} known repairs will be deducted from the as-is estimate` : ""}. No physical inspection has been completed.`
+        : "Condition basis: fair/typical assumption. No physical inspection or reported condition is available; enter known condition above to replace this assumption.";
+    }
     let panel = document.getElementById("valueReadiness");
     if (!panel) {
       panel = document.createElement("div");
@@ -401,7 +415,7 @@
     panel.innerHTML = `
       <div class="readiness-head compact"><div><div class="readiness-title">${mode === "buy" ? "Buying" : "Selling"} analysis readiness</div><div class="readiness-summary ${requiredDone === requiredTotal ? "ready" : "pending"}">${requiredDone}/${requiredTotal} required inputs complete</div></div><div class="readiness-status ${requiredDone === requiredTotal ? "ready" : "pending"}">${requiredDone === requiredTotal ? "Ready" : `${requiredTotal-requiredDone} Remaining`}</div></div>
       <div class="readiness-progress"><div style="width:${Math.round(requiredDone/requiredTotal*100)}%"></div></div>
-      <div class="readiness-note compact-note">The app calculates current value from market references, mileage, inspection results and known recon instead of asking you to guess what the vehicle is worth.</div>`;
+      <div class="readiness-note compact-note">The app calculates current value from market references, mileage and the available condition basis. In Value Analysis Only, reported condition and known repairs are used without requiring the Inspection or Recon pages.</div>`;
 
     ["buyResale","sellAsIs","sellPostRecon","sellTarget","sellList","sellQuick"].forEach((id) => document.getElementById(id)?.closest("label")?.classList.add("v12-derived"));
 
@@ -430,7 +444,7 @@
     if (!banner) {
       banner = document.createElement("div"); banner.id = "v12EstimateBanner"; banner.className = "v12-estimate-banner"; panel.insertAdjacentElement("afterend", banner);
     }
-    banner.innerHTML = `<div class="muted">APP ESTIMATED CURRENT VALUE</div><div class="big">${money(m.asIs)}</div><div class="note">${m.inspected ? `Uses ${m.condition.pct}/100 (${m.condition.letter}) physical condition, mileage and known repair needs.` : "Preliminary estimate assumes fair/typical physical condition until an inspection is completed."} ${m.refs ? `Based on ${m.refs} entered market reference${m.refs===1?"":"s"}.` : "Enter at least one market reference on the Market page to calculate a value."}</div>`;
+    banner.innerHTML = `<div class="muted">APP ESTIMATED CURRENT VALUE</div><div class="big">${money(m.asIs)}</div><div class="note">${m.conditionBasis === "inspected" ? `Uses ${m.condition.pct}/100 (${m.condition.letter}) inspected condition.` : m.conditionBasis === "reported" ? `Uses user-entered ${m.reportedCondition} reported condition${m.knownRepairEstimate ? ` and deducts ${money(m.knownRepairEstimate)} of known repairs` : ""}.` : "Uses a fair/typical condition assumption; no physical inspection or reported condition is available."} ${m.refs ? `Based on ${m.refs} entered market reference${m.refs===1?"":"s"}.` : "Enter at least one market reference on the Market page to calculate a value."}</div>`;
   }
 
   async function augmentDashboard() {
@@ -454,14 +468,17 @@
 
     const sections = document.createElement("div");
     sections.className = "v12-dashboard-sections";
-    sections.innerHTML = `
-      <div class="v12-section"><div class="v12-section-head">Condition Summary</div><div class="v12-section-body"><div class="v12-summary-grid"><div class="v12-summary-metric"><small>Condition Score</small><strong class="green">${c.pct===null?"—":`${c.pct}/100`}</strong><div class="muted">${c.descriptor}</div></div><div class="v12-summary-metric"><small>Letter Grade</small><strong class="v12-grade-inline ${gradeClass(c.letter)}"><span class="letter">${c.letter}</span></strong></div><div class="v12-summary-metric"><small>Risk Level</small><strong class="${c.risk==="Low"?"green":"amber"}">${c.risk}</strong><div class="muted">${c.flags.count} critical concern${c.flags.count===1?"":"s"}</div></div></div><div class="v12-confidence"><div class="v12-confidence-head"><span>Inspection Confidence</span><span>${c.coverage}% · ${c.answered}/${c.total} checks</span></div><div class="v12-confidence-track"><div class="v12-confidence-fill" style="width:${c.coverage}%"></div></div></div></div></div>
-      <div class="v12-section"><div class="v12-section-head">Pricing & Decision Context</div><div class="v12-section-body"><div class="v12-summary-grid"><div class="v12-summary-metric"><small>Estimated As-Is</small><strong>${money(m.asIs)}</strong><div class="muted">${m.inspected?"Condition-adjusted":"Fair-condition assumption"}</div></div><div class="v12-summary-metric"><small>${mode==="buy"?"Seller Asking":"Expected Sale"}</small><strong>${mode==="buy"?money(ask):money(m.expectedSale)}</strong></div><div class="v12-summary-metric"><small>${mode==="buy"?"Max Recommended":"Known Recon"}</small><strong>${mode==="buy"?money(maxBuy):money(recon.known)}</strong></div></div><div class="v12-action-panel"><button data-v12-action="inspection">Run / Update Inspection</button><button data-v12-action="value">Update Value Analysis</button><button class="primary" data-v12-action="full">Run Full Assessment</button></div></div></div>`;
+    const activePath = path();
+    const conditionSection = `<div class="v12-section"><div class="v12-section-head">Condition Summary</div><div class="v12-section-body"><div class="v12-summary-grid"><div class="v12-summary-metric"><small>Condition Score</small><strong class="green">${c.pct===null?"—":`${c.pct}/100`}</strong><div class="muted">${c.descriptor}</div></div><div class="v12-summary-metric"><small>Letter Grade</small><strong class="v12-grade-inline ${gradeClass(c.letter)}"><span class="letter">${c.letter}</span></strong></div><div class="v12-summary-metric"><small>Risk Level</small><strong class="${c.risk==="Low"?"green":"amber"}">${c.risk}</strong><div class="muted">${c.flags.count} critical concern${c.flags.count===1?"":"s"}</div></div></div><div class="v12-confidence"><div class="v12-confidence-head"><span>Inspection Confidence</span><span>${c.coverage}% · ${c.answered}/${c.total} checks</span></div><div class="v12-confidence-track"><div class="v12-confidence-fill" style="width:${c.coverage}%"></div></div></div></div></div>`;
+    const basisText = m.conditionBasis === "inspected" ? `Observed: ${c.pct}/100 inspected condition` : m.conditionBasis === "reported" ? `Entered: ${m.reportedCondition} reported condition${m.knownRepairEstimate ? `; ${money(m.knownRepairEstimate)} known repairs` : ""}` : "Assumption: fair/typical condition; no inspection or reported condition";
+    const pricingSection = `<div class="v12-section"><div class="v12-section-head">Pricing & Decision Context</div><div class="v12-section-body"><div class="v12-summary-grid"><div class="v12-summary-metric"><small>Estimated As-Is</small><strong>${money(m.asIs)}</strong><div class="muted">${basisText}</div></div><div class="v12-summary-metric"><small>${mode==="buy"?"Seller Asking":"Expected Sale"}</small><strong>${mode==="buy"?money(ask):money(m.expectedSale)}</strong></div><div class="v12-summary-metric"><small>${mode==="buy"?"Max Recommended":activePath==="value"?"Known Repairs":"Known Recon"}</small><strong>${mode==="buy"?money(maxBuy):money(activePath==="value"?m.knownRepairEstimate:recon.known)}</strong></div></div><div class="v12-report-basis"><b>Data basis:</b> ${basisText}. Market references and mileage are user-entered unless otherwise shown.</div><div class="v12-action-panel"><button data-v12-action="inspection">Run / Update Inspection</button><button data-v12-action="value">Update Value Analysis</button><button class="primary" data-v12-action="full">Run Full Assessment</button></div></div></div>`;
+    sections.innerHTML = activePath === "inspection" ? conditionSection : activePath === "value" ? pricingSection : conditionSection + pricingSection;
     hero.insertAdjacentElement("afterend", sections);
     sections.querySelectorAll("[data-v12-action]").forEach((button) => button.addEventListener("click", () => {
       const p = button.dataset.v12Action;
       localStorage.setItem(PATH_KEY,p);
       if (p === "inspection") { APP.setLayer?.("condition"); APP.showPage?.("inspectionPage"); }
+      else if (p === "full") { APP.setLayer?.("value"); APP.showPage?.("inspectionPage"); }
       else { APP.setLayer?.("value"); APP.showPage?.("marketPage"); }
       APP.saveCurrent?.();
     }));

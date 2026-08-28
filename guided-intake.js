@@ -197,8 +197,8 @@
       const button = event.target.closest("#inspectionPage [data-next]");
       if (!button) return;
       event.preventDefault(); event.stopImmediatePropagation();
-      const layer = APP.getLayer() || "condition";
-      APP.showPage(layer === "value" ? "reconPage" : "homePage");
+      const assessmentPath = localStorage.getItem(PATH_KEY) || "inspection";
+      APP.showPage(assessmentPath === "full" ? "reconPage" : "homePage");
     }, true);
   }
 

@@ -255,6 +255,31 @@
     </section>
 
     <section id="dealPage" class="page value-page">
+      <div class="card value-only-context" id="valueOnlyConditionCard">
+        <div class="title">Known Condition & Repairs</div>
+        <div class="hint">For Value Analysis Only, enter what you already know from the listing, seller or records. These inputs keep the value estimate self-contained without requiring a physical inspection or Recon page.</div>
+        <div class="grid3 field-grid">
+          <label>Known / Reported Condition
+            <select id="knownCondition">
+              <option value="">Unknown — use fair/typical assumption</option>
+              <option value="excellent">Excellent</option>
+              <option value="good">Good</option>
+              <option value="fair">Fair</option>
+              <option value="poor">Poor</option>
+            </select>
+            <span class="field-help">Use only condition information you actually have; this is not a substitute for an inspection.</span>
+          </label>
+          <label>Known Repair Estimate
+            <input id="knownRepairEstimate" inputmode="decimal" placeholder="0">
+            <span class="field-help">Total known or seller-disclosed repair cost. It is deducted from the Value-only as-is estimate.</span>
+          </label>
+          <label>Known Repairs / Condition Notes
+            <textarea id="knownRepairs" rows="4" placeholder="Seller disclosures, warning lights, cosmetic damage, maintenance needs, etc."></textarea>
+            <span class="field-help">Document the source and what is known versus uncertain.</span>
+          </label>
+        </div>
+        <div id="valueConditionBasis" class="notice">Condition basis: fair/typical assumption until you enter reported condition or complete an inspection.</div>
+      </div>
       <div class="card">
         <div class="title">Value & Price Analysis</div>
         <div class="hint" id="dealModeHint">Complete the selected buy or sell analysis.</div>

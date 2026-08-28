@@ -540,7 +540,10 @@
   }
 
   function updateValue() {
-    const sellRecon = reconForMode(APP.value("sellReconMode"));
+    const valueOnly = localStorage.getItem("vehicleScorecardAssessmentPath") === "value";
+    const knownRepairEstimate = valueOnly ? APP.numberFrom("knownRepairEstimate") : 0;
+    const baseSellRecon = reconForMode(APP.value("sellReconMode"));
+    const sellRecon = APP.value("sellReconMode") === "none" ? 0 : baseSellRecon + knownRepairEstimate;
     const asIs = APP.numberFrom("sellAsIs");
     const postRecon = APP.numberFrom("sellPostRecon");
     const sellTarget = APP.numberFrom("sellTarget");
@@ -581,7 +584,7 @@
 
     const ask = APP.numberFrom("buyAsk") || APP.numberFrom("asking");
     const purchase = APP.numberFrom("buyTarget") || ask;
-    const buyRecon = reconForMode(APP.value("buyReconMode"));
+    const buyRecon = reconForMode(APP.value("buyReconMode")) + knownRepairEstimate;
     const buyFees = APP.numberFrom("buyFees");
     const acquisitionCosts = APP.numberFrom("buyAcqCosts");
     const buySellingCosts = APP.numberFrom("buySellingCosts");
@@ -640,7 +643,8 @@
     "sellQuick", "sellFloor", "sellCosts", "sellReconMode", "brokerType",
     "brokerFlat", "brokerPercent", "brokerMinimum", "buyAsk", "buyTarget",
     "buyResale", "requiredProfit", "buyFees", "buyAcqCosts", "buySellingCosts",
-    "buyReconMode", "decision", "status", "followup", "notes"
+    "buyReconMode", "knownCondition", "knownRepairEstimate", "knownRepairs",
+    "decision", "status", "followup", "notes"
   ];
 
   APP.getSaved = () => {

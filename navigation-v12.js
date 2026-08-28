@@ -19,10 +19,10 @@
     ],
     full: [
       ["profilePage", "Vehicle"],
-      ["marketPage", "Market"],
-      ["dealPage", "Value"],
       ["inspectionPage", "Inspection"],
       ["reconPage", "Recon"],
+      ["marketPage", "Market"],
+      ["dealPage", "Value"],
       ["homePage", "Report"]
     ]
   };
@@ -82,13 +82,10 @@
   }
 
   function syncDrawer() {
-    const p = getPath();
+    const inFlow = new Set(flow().map(([pageId]) => pageId));
     document.querySelectorAll(".drawer-link").forEach((button) => {
-      const target = button.dataset.target;
-      const allowed = p === "full" ||
-        (p === "inspection" && !["reconPage","marketPage","dealPage"].includes(target)) ||
-        (p === "value" && !["inspectionPage","reconPage"].includes(target));
-      button.classList.toggle("hidden", !allowed);
+      button.classList.remove("hidden");
+      button.dataset.inAssessmentFlow = inFlow.has(button.dataset.target) ? "true" : "false";
     });
   }
 
@@ -143,7 +140,7 @@
       event.preventDefault();
       event.stopImmediatePropagation();
       APP.saveCurrent?.();
-      APP.showPage?.("marketPage");
+      APP.showPage?.(getPath() === "full" ? "inspectionPage" : "marketPage");
       return;
     }
 
