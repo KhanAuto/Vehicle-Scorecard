@@ -743,7 +743,7 @@
     document.dispatchEvent(new CustomEvent("scorecard:workflowchange"));
   };
 
-  APP.loadSaved = async (id) => {
+  APP.loadSaved = async (id, destinationPage = "profilePage") => {
     const vehicle = APP.getSaved().find((item) => item.id === id);
     if (!vehicle) return;
 
@@ -830,7 +830,7 @@
     document.dispatchEvent(new CustomEvent("scorecard:workflowchange"));
     document.dispatchEvent(new CustomEvent("scorecard:vehiclechange"));
 
-    APP.showPage?.("profilePage");
+    APP.showPage?.(destinationPage || "profilePage");
   };
 
   APP.renderSaved = () => {
