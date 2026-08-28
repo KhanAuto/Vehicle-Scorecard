@@ -973,36 +973,20 @@
           ?.getRegistrations?.() ||
         [];
 
-      for (
-        const registration
-        of registrations
-      ) {
-        try {
-          await registration.update();
-        } catch (error) {
-          // Continue with reload.
-        }
-
-        if (registration.waiting) {
-          registration.waiting
-            .postMessage({
-              type: "SKIP_WAITING"
-            });
-        }
+      await Promise.all(registrations.map(async (registration) => {
+        try { await registration.unregister(); } catch (error) {}
+      }));
+      if ("caches" in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys
+          .filter((key) => key.startsWith("vehicle-scorecard"))
+          .map((key) => caches.delete(key)));
       }
 
-      setTimeout(() => {
-        const url =
-          new URL(location.href);
-
-        url.searchParams.set(
-          "refresh",
-          Date.now()
-        );
-
-        url.hash = "";
-        location.replace(url);
-      }, 250);
+      const url = new URL(location.href);
+      url.searchParams.set("refresh", Date.now());
+      url.hash = "";
+      location.replace(url);
     } catch (error) {
       location.reload();
     }
