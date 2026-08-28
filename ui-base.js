@@ -647,16 +647,9 @@
           "Realistic sale target"
         ) +
         reportMetric(
-          "Seller Take-Home",
-          APP.text(
-            "sellerNetAfterBroker"
-          ),
-          "After recon, costs and broker fee"
-        ) +
-        reportMetric(
-          "Broker Earnings",
-          APP.text("brokerEarnings"),
-          "Estimated compensation"
+          "Estimated Take-Home",
+          APP.text("sellNet"),
+          "After recon and selling costs"
         );
     }
 
