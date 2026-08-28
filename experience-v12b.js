@@ -324,7 +324,11 @@
   function launchNew(p) {
     APP.clearCurrent?.();
     localStorage.setItem(PATH_KEY, p);
-    if (p === "inspection") APP.setLayer?.("condition"); else APP.setLayer?.("value");
+    if (p === "inspection") APP.setLayer?.("condition");
+    else {
+      APP.setLayer?.("value");
+      APP.setMode?.("buy");
+    }
     APP.showPage?.("profilePage");
   }
 
