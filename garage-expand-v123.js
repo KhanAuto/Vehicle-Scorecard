@@ -29,6 +29,23 @@
     return (APP.getSaved?.()||[]).find(v=>nameFor(v)===title) || null;
   }
   function targetButton(label,page){ return `<button type="button" class="btn v123-jump" data-v123-page="${page}">${label}</button>`; }
+  function showVehicleInHeader(vehicle) {
+    const header = document.getElementById("topScore");
+    if (!header) return;
+    const score = scoreNumber(vehicle?.score?.pct);
+    const grade = vehicle?.conditionGrade || (score === null ? "—" : baseGrade(score));
+    header.textContent = score === null ? "Condition —" : `Condition ${score}/100 · ${grade}`;
+    header.dataset.previewVehicleId = String(vehicle?.id || "");
+  }
+  function restoreActiveHeader() {
+    const header = document.getElementById("topScore");
+    if (!header) return;
+    delete header.dataset.previewVehicleId;
+    const condition = APP.conditionAssessment?.();
+    header.textContent = condition?.pct === null || condition?.pct === undefined
+      ? "Condition —"
+      : `Condition ${condition.pct}/100 · ${condition.letter || "—"}`;
+  }
   function details(vehicle){
     const f=vehicle.fields||{};
     const score=scoreNumber(vehicle.score?.pct);
@@ -269,12 +286,14 @@
         existing.remove();
         card.classList.remove("v123-expanded");
         card.setAttribute("aria-expanded","false");
+        restoreActiveHeader();
         return;
       }
       collapseOthers(card);
       card.insertAdjacentHTML("beforeend", details(vehicle));
       card.classList.add("v123-expanded");
       card.setAttribute("aria-expanded","true");
+      showVehicleInHeader(vehicle);
     });
     cleanLegacyOverview();
   }
