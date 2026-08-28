@@ -1,4 +1,4 @@
-const CACHE_NAME = "vehicle-scorecard-app-shell-v12-30";
+const CACHE_NAME = "vehicle-scorecard-app-shell-v12-31";
 
 const CORE_ASSETS = [
   "./", "./index.html", "./styles.css", "./core.js", "./inspection.js", "./intelligence.js", "./ui.js",
