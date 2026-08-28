@@ -480,7 +480,10 @@
     if (!banner) {
       banner = document.createElement("div"); banner.id = "v12EstimateBanner"; banner.className = "v12-estimate-banner"; panel.insertAdjacentElement("afterend", banner);
     }
-    banner.innerHTML = `<div class="muted">APP ESTIMATED CURRENT VALUE</div><div class="big">${money(m.asIs)}</div><div class="note">${m.conditionBasis === "inspected" ? `Uses ${m.condition.pct}/100 (${m.condition.letter}) inspected condition.` : m.conditionBasis === "reported" ? `Uses user-entered ${m.reportedCondition} reported condition${m.knownRepairEstimate ? ` and deducts ${money(m.knownRepairEstimate)} of known repairs` : ""}.` : "Uses a fair/typical condition assumption; no physical inspection or reported condition is available."} ${m.refs ? `Based on ${m.refs} entered market reference${m.refs===1?"":"s"}.` : "Enter at least one market reference on the Market page to calculate a value."}</div>`;
+    const estimateNote = `${m.conditionBasis === "inspected" ? `Uses ${m.condition.pct}/100 (${m.condition.letter}) inspected condition.` : m.conditionBasis === "reported" ? `Uses user-entered ${m.reportedCondition} reported condition${m.knownRepairEstimate ? ` and deducts ${money(m.knownRepairEstimate)} of known repairs` : ""}.` : "Uses a fair/typical condition assumption; no physical inspection or reported condition is available."} ${m.refs ? `Based on ${m.refs} entered market reference${m.refs===1?"":"s"}.` : "Enter at least one market reference on the Market page to calculate prices."}`;
+    banner.innerHTML = mode === "sell"
+      ? `<div class="muted">CALCULATED SELLING PRICE ESTIMATES</div><div class="v12-price-grid"><div class="v12-price-cell"><small>As-Is Value</small><strong>${money(m.asIs)}</strong></div><div class="v12-price-cell"><small>Post-Recon Value</small><strong>${money(m.adjusted)}</strong></div><div class="v12-price-cell"><small>Recommended List</small><strong>${money(m.list)}</strong></div><div class="v12-price-cell"><small>Projected Sale</small><strong>${money(m.expectedSale)}</strong></div><div class="v12-price-cell"><small>Quick-Sale</small><strong>${money(m.quick)}</strong></div></div><div class="note">${estimateNote}</div>`
+      : `<div class="muted">APP ESTIMATED CURRENT VALUE</div><div class="big">${money(m.asIs)}</div><div class="note">${estimateNote}</div>`;
   }
 
   async function augmentDashboard() {
