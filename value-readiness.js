@@ -6,19 +6,13 @@
 
   const SPECS = {
     sell: {
-      required: [
-        { id: "sellAsIs", label: "Current As-Is Value", why: "Needed to establish what the vehicle is worth today." },
-        { id: "sellTarget", label: "Expected Sale Price", why: "Needed to calculate realistic expected proceeds." }
-      ],
+      required: [],
       recommended: [
-        { id: "sellPostRecon", label: "Post-Recon Market Value", why: "Shows whether planned recon adds enough value." },
-        { id: "sellList", label: "Recommended List Price", why: "Helps compare your asking price with expected market value." },
+        { id: "sellFloor", label: "Minimum Take-Home", why: "Compares the projected proceeds with your minimum acceptable result." },
         { id: "sellCosts", label: "Other Selling Costs", why: "Improves seller take-home accuracy." },
         { id: "sellReconMode", label: "Recon Strategy", why: "Controls which recon costs are included in the sale analysis." }
       ],
       optional: [
-        { id: "sellQuick", label: "Quick-Sale Price", why: "Useful if you want a lower price for a faster sale." },
-        { id: "sellFloor", label: "Seller Minimum Net", why: "Use when you have a hard minimum amount you need to receive." },
         { id: "brokerType", label: "Broker Fee Type", why: "Only applies if a broker or consignee is involved." },
         { id: "brokerFlat", label: "Flat Broker Fee", why: "Only applies to a flat-fee arrangement." },
         { id: "brokerPercent", label: "Commission %", why: "Only applies to a percentage commission." },
@@ -149,6 +143,8 @@
 
     const optionalSection = host.querySelector(".optional-section");
     optionalSection?.classList.toggle("hidden", spec.optional.length === 0);
+    const requiredSection = host.querySelector(".required-section");
+    requiredSection?.classList.toggle("hidden", spec.required.length === 0);
 
     analysis.querySelectorAll(".grid4.field-grid, .grid4.section-gap").forEach((grid) => {
       if (!grid.children.length) grid.classList.add("hidden");
@@ -242,6 +238,7 @@
     const missing = spec.required.filter((item) => !complete(item));
     const done = spec.required.length - missing.length;
     const ready = missing.length === 0;
+    const hasRequired = spec.required.length > 0;
 
     panel.innerHTML = `
       <div class="readiness-head compact">
@@ -250,12 +247,12 @@
             <div class="readiness-title">${currentMode === "buy" ? "Buying" : "Selling"} analysis</div>
             <span class="analysis-mode-chip">${currentMode === "buy" ? "BUYING" : "SELLING"}</span>
           </div>
-          <div class="readiness-summary ${ready ? "ready" : "pending"}">${done}/${spec.required.length} required inputs complete</div>
+          <div class="readiness-summary ${ready ? "ready" : "pending"}">${hasRequired ? `${done}/${spec.required.length} required inputs complete` : "Values are calculated from the assessment"}</div>
         </div>
-        <div class="readiness-status ${ready ? "ready" : "pending"}">${ready ? "Calculation Ready" : `${missing.length} Needed`}</div>
+        <div class="readiness-status ${ready ? "ready" : "pending"}">${ready ? (hasRequired ? "Calculation Ready" : "No Guesses Required") : `${missing.length} Needed`}</div>
       </div>
 
-      <div class="readiness-progress"><div style="width:${Math.round((done / spec.required.length) * 100)}%"></div></div>
+      ${hasRequired ? `<div class="readiness-progress"><div style="width:${Math.round((done / spec.required.length) * 100)}%"></div></div>` : ""}
 
       ${currentMode === "buy" ? `
         <div class="value-context-card">
@@ -267,7 +264,7 @@
         </div>` : ""}
 
       <div class="readiness-note compact-note">
-        Complete the <b>Required</b> fields first. <b>Recommended</b> fields improve accuracy, while <b>Optional</b> fields only apply to certain deals.
+        ${hasRequired ? "Complete the <b>Required</b> fields first. <b>Recommended</b> fields improve accuracy, while <b>Optional</b> fields only apply to certain deals." : "The app derives selling values from condition, mileage, market references and recon. Add your known constraints below to personalize the proceeds analysis."}
       </div>`;
 
     updateOutputs(spec, missing);
