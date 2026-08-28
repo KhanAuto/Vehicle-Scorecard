@@ -320,7 +320,7 @@
         ? [["Vehicle",true],["Market",hasMarket],["Value",hasValue],["Report",hasValue]]
         : [["Vehicle",true],["Inspection",inspected],["Recon",hasRecon],["Market",hasMarket],["Value",hasValue],["Report",inspected && hasValue]];
     const firstOpen = steps.findIndex((x) => !x[1]);
-    return `<div class="v12-progress-rail">${steps.map(([label, done], i) => `<div class="v12-progress-node ${done ? "done" : i === firstOpen ? "active" : ""}" title="${label}"><span class="v12-progress-dot">${done ? "✓" : ""}</span></div>`).join("")}</div>`;
+    return `<div class="v12-progress-rail" aria-label="Report module progress">${steps.map(([label, done], i) => `<div class="v12-progress-node ${done ? "done" : i === firstOpen ? "active" : ""}" title="${label}"><span class="v12-progress-dot">${done ? "✓" : ""}</span><small>${label}</small></div>`).join("")}</div>`;
   }
 
   function launchNew(p) {
