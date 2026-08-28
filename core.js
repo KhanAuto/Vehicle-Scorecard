@@ -589,21 +589,17 @@
     const acquisitionCosts = APP.numberFrom("buyAcqCosts");
     const buySellingCosts = APP.numberFrom("buySellingCosts");
     const resale = APP.numberFrom("buyResale");
+    const buyIntent = APP.value("buyIntent") === "flip" ? "flip" : "ownership";
 
-    const netResale = Math.max(0, resale - buySellingCosts);
+    const netResale = Math.max(0, resale - (buyIntent === "flip" ? buySellingCosts : 0));
     const basis = purchase + buyRecon + buyFees + acquisitionCosts;
     const profit = netResale - basis;
     const roi = basis ? profit / basis * 100 : 0;
     const margin = resale ? profit / resale * 100 : 0;
 
-    const maxBuy = Math.max(
-      0,
-      netResale -
-      APP.numberFrom("requiredProfit") -
-      buyRecon -
-      buyFees -
-      acquisitionCosts
-    );
+    const maxBuy = Math.max(0, netResale -
+      (buyIntent === "flip" ? APP.numberFrom("requiredProfit") : 0) -
+      buyRecon - buyFees - acquisitionCosts);
 
     const negotiationGap = maxBuy - ask;
 
@@ -617,15 +613,32 @@
 
     let assessment = "—";
 
+    APP.$$('[data-buy-flip-only]').forEach((element) => {
+      element.classList.toggle("hidden", buyIntent !== "flip");
+    });
+    APP.$("#buyValueFieldLabel").textContent = buyIntent === "flip" ? "Expected Resale Price" : "Estimated Market Value";
+    APP.$("#buyValueFieldHelp").textContent = buyIntent === "flip"
+      ? "Your realistic resale target after planned work."
+      : "A realistic condition-adjusted value for comparison with your all-in cost.";
+    APP.$("#buyProfitLabel").textContent = buyIntent === "flip" ? "Projected Profit" : "Value Position";
+    APP.$("#buyRoiLabel").textContent = buyIntent === "flip" ? "ROI" : "Value Position %";
+
     if (resale) {
       const redFlags = Number(APP.text("redFlagCount")) || 0;
-
-      assessment =
-        profit < 0 ? "PASS" :
-        APP.numberFrom("requiredProfit") && profit < APP.numberFrom("requiredProfit") ? "MARGINAL" :
-        roi >= 25 && redFlags === 0 ? "STRONG BUY" :
-        roi >= 15 ? "GOOD BUY" :
-        roi >= 8 ? "MARGINAL" : "HIGH RISK";
+      if (buyIntent === "flip") {
+        assessment =
+          profit < 0 ? "PASS" :
+          APP.numberFrom("requiredProfit") && profit < APP.numberFrom("requiredProfit") ? "MARGINAL" :
+          roi >= 25 && redFlags === 0 ? "STRONG BUY" :
+          roi >= 15 ? "GOOD BUY" :
+          roi >= 8 ? "MARGINAL" : "HIGH RISK";
+      } else {
+        const ratio = resale ? basis / resale : 0;
+        assessment = redFlags ? "NEEDS PPI" :
+          ratio <= .9 ? "STRONG VALUE" :
+          ratio <= 1.02 ? "FAIR BUY" :
+          ratio <= 1.08 ? "HIGH PRICE" : "OVERPRICED";
+      }
     }
 
     APP.$("#dealAssessment").textContent = assessment;
@@ -641,7 +654,7 @@
     "edmundsTrade", "edmundsPrivate", "dealer1", "dealer2", "privateComp",
     "instantOffer", "sellAsIs", "sellPostRecon", "sellList", "sellTarget",
     "sellQuick", "sellFloor", "sellCosts", "sellReconMode", "brokerType",
-    "brokerFlat", "brokerPercent", "brokerMinimum", "buyAsk", "buyTarget",
+    "brokerFlat", "brokerPercent", "brokerMinimum", "buyIntent", "buyAsk", "buyTarget",
     "buyResale", "requiredProfit", "buyFees", "buyAcqCosts", "buySellingCosts",
     "buyReconMode", "knownCondition", "knownRepairEstimate", "knownRepairs",
     "decision", "status", "followup", "notes"
