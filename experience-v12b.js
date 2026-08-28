@@ -436,16 +436,18 @@
 
     const marketReady = m.refs > 0;
     const askReady = mode === "sell" || num("buyAsk") > 0;
-    const profitReady = mode === "sell" || num("requiredProfit") > 0;
-    const requiredTotal = mode === "buy" ? 3 : 1;
-    const requiredDone = mode === "buy" ? [marketReady, askReady, profitReady].filter(Boolean).length : (marketReady ? 1 : 0);
+    const flipIntent = document.getElementById("buyIntent")?.value === "flip";
+    const valueReady = mode === "sell" || num("buyResale") > 0;
+    const profitReady = !flipIntent || num("requiredProfit") > 0;
+    const requiredTotal = mode === "buy" ? (flipIntent ? 4 : 3) : 1;
+    const requiredDone = mode === "buy" ? [marketReady, askReady, valueReady, ...(flipIntent ? [profitReady] : [])].filter(Boolean).length : (marketReady ? 1 : 0);
 
     panel.innerHTML = `
       <div class="readiness-head compact"><div><div class="readiness-title">${mode === "buy" ? "Buying" : "Selling"} analysis readiness</div><div class="readiness-summary ${requiredDone === requiredTotal ? "ready" : "pending"}">${requiredDone}/${requiredTotal} required inputs complete</div></div><div class="readiness-status ${requiredDone === requiredTotal ? "ready" : "pending"}">${requiredDone === requiredTotal ? "Ready" : `${requiredTotal-requiredDone} Remaining`}</div></div>
       <div class="readiness-progress"><div style="width:${Math.round(requiredDone/requiredTotal*100)}%"></div></div>
       <div class="readiness-note compact-note">The app calculates current value from market references, mileage and the available condition basis. In Value Analysis Only, reported condition and known repairs are used without requiring the Inspection or Recon pages.</div>`;
 
-    ["buyResale","sellAsIs","sellPostRecon","sellTarget","sellList","sellQuick"].forEach((id) => document.getElementById(id)?.closest("label")?.classList.add("v12-derived"));
+    ["sellAsIs","sellPostRecon","sellTarget","sellList","sellQuick"].forEach((id) => document.getElementById(id)?.closest("label")?.classList.add("v12-derived"));
 
     const mark = (id, type, text) => {
       const label = document.getElementById(id)?.closest("label");
@@ -456,12 +458,13 @@
     };
 
     if (mode === "buy") {
-      mark("buyAsk","required",num("buyAsk") ? "✓ Complete" : "Needed — seller's advertised asking price.");
-      mark("requiredProfit","required",num("requiredProfit") ? "✓ Complete" : "Needed — minimum profit/return you want the deal to produce.");
+      mark("buyAsk","required",num("buyAsk") ? "✓ Complete" : "Needed — vehicle's advertised list price.");
+      mark("buyResale","required",num("buyResale") ? "✓ Complete" : `Needed — ${flipIntent ? "expected resale price" : "estimated market value"}.`);
+      if (flipIntent) mark("requiredProfit","required",num("requiredProfit") ? "✓ Complete" : "Needed — minimum resale profit you want the deal to produce.");
       mark("buyTarget","recommended",num("buyTarget") ? "✓ Added" : "Recommended — your intended offer or purchase price.");
       mark("buyFees","recommended",num("buyFees") ? "✓ Added" : "Recommended — taxes, title and registration.");
       mark("buyAcqCosts","recommended",num("buyAcqCosts") ? "✓ Added" : "Recommended — transport, inspection or acquisition costs.");
-      mark("buySellingCosts","recommended",num("buySellingCosts") ? "✓ Added" : "Recommended if resale is part of the plan.");
+      if (flipIntent) mark("buySellingCosts","recommended",num("buySellingCosts") ? "✓ Added" : "Recommended — expected resale costs.");
     } else {
       mark("sellCosts","recommended",num("sellCosts") ? "✓ Added" : "Recommended — fees or selling costs you expect.");
       mark("sellFloor","optional",num("sellFloor") ? "✓ Added" : "Optional — minimum take-home you would accept.");
