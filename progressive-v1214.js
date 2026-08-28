@@ -26,7 +26,7 @@
       title: "Market References",
       help: "Use comparable market references to establish a defensible local value range. ZIP and at least one pricing reference are recommended for a usable market analysis. More independent references improve confidence.",
       required: ["marketZip"],
-      optional: ["marketRadius","compMileage","marketNotes","kbbTrade","kbbPrivate","edmundsTrade","edmundsPrivate","instantOffer","private1Price","private1Year","private1Mileage","private2Price","private2Year","private2Mileage","private3Price","private3Year","private3Mileage","dealer1Price","dealer1Year","dealer1Mileage","dealer2Price","dealer2Year","dealer2Mileage","dealer3Price","dealer3Year","dealer3Mileage"]
+      optional: ["marketRadius","compMileage","marketNotes","kbbTrade","kbbPrivate","edmundsTrade","edmundsPrivate","estimatedWholesale","instantOffer","instantOfferDate","instantOffer2","instantOffer2Date","dealerCashOffer","dealerCashOfferDate","actualTradeOffer","tradeTaxBenefit","tradeApplies","actualTradeOfferDate","private1Price","private1Year","private1Mileage","private2Price","private2Year","private2Mileage","private3Price","private3Year","private3Mileage","dealer1Price","dealer1Year","dealer1Mileage","dealer2Price","dealer2Year","dealer2Mileage","dealer3Price","dealer3Year","dealer3Mileage"]
     },
     dealPage: {
       title: "Value Analysis",
@@ -93,7 +93,7 @@
     }
     if (pageId === "marketPage") {
       const miss=empty("marketZip") ? ["market ZIP"] : [];
-      const refs=["kbbTrade","kbbPrivate","edmundsTrade","edmundsPrivate","instantOffer","private1Price","private2Price","private3Price","dealer1Price","dealer2Price","dealer3Price"];
+      const refs=["kbbTrade","kbbPrivate","edmundsTrade","edmundsPrivate","private1Price","private2Price","private3Price","dealer1Price","dealer2Price","dealer3Price"];
       if (!refs.some(id => !empty(id))) miss.push("at least one market reference");
       return miss;
     }
