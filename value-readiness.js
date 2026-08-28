@@ -12,13 +12,8 @@
         { id: "sellCosts", label: "Other Selling Costs", why: "Improves seller take-home accuracy." },
         { id: "sellReconMode", label: "Recon Strategy", why: "Controls which recon costs are included in the sale analysis." }
       ],
-      optional: [
-        { id: "brokerType", label: "Broker Fee Type", why: "Only applies if a broker or consignee is involved." },
-        { id: "brokerFlat", label: "Flat Broker Fee", why: "Only applies to a flat-fee arrangement." },
-        { id: "brokerPercent", label: "Commission %", why: "Only applies to a percentage commission." },
-        { id: "brokerMinimum", label: "Minimum Commission", why: "Only applies if the broker has a minimum fee." }
-      ],
-      outputs: ["sellNet", "sellerNetAfterBroker", "reconBenefit", "pricingCheck"]
+      optional: [],
+      outputs: ["sellNet", "reconBenefit", "pricingCheck"]
     },
     buy: {
       required: [
