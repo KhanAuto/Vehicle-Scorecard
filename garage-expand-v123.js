@@ -45,6 +45,7 @@
     const priceTwo=selling?(Number(f.sellAsIs)||0):(Number(f.buyResale)||0);
     const gradeWasCapped=score!==null&&grade!=="—"&&grade!==baseGrade(score);
     const reportType=["inspection","value","full"].includes(vehicle.assessmentPath)?vehicle.assessmentPath:(vehicle.layer==="condition"?"inspection":"full");
+    const analysisIntent=vehicle.mode==="sell"?"sell":"buy";
     const upgradeActions=[
       ratings?"":'<button type="button" class="btn" data-v1214-upgrade="inspection">+ Add Inspection</button>',
       market?"":'<button type="button" class="btn" data-v1214-upgrade="market">+ Add Market & Value</button>',
@@ -64,6 +65,11 @@
         <label><span>Active Report Type</span><select data-v123-report-type-select><option value="inspection" ${reportType==="inspection"?"selected":""}>Inspection Only</option><option value="value" ${reportType==="value"?"selected":""}>Value Analysis Only</option><option value="full" ${reportType==="full"?"selected":""}>Full Assessment</option></select></label>
         <button type="button" class="btn primary" data-v123-apply-report-type>Apply Report Type</button>
         <small>Previously entered modules are preserved if you switch report types.</small>
+      </div>
+      <div class="v123-report-type v123-analysis-intent">
+        <label><span>Analysis Intent</span><select data-v123-analysis-intent-select><option value="buy" ${analysisIntent==="buy"?"selected":""}>Buying</option><option value="sell" ${analysisIntent==="sell"?"selected":""}>Selling</option></select></label>
+        <button type="button" class="btn primary" data-v123-apply-analysis-intent>Apply Intent</button>
+        <small>Switching intent keeps all saved information and changes which Buying or Selling questions appear when editing.</small>
       </div>
       <div class="v123-actions">
         ${targetButton("Edit Vehicle Details","profilePage")}
@@ -140,9 +146,7 @@
       }
       saved.assessmentPath = selected;
       saved.layer = selected === "inspection" ? "condition" : "value";
-      saved.mode = selected === "inspection"
-        ? "inspect"
-        : (["buy", "sell"].includes(saved.mode) ? saved.mode : saved.moduleCoverage.previousValueMode || "buy");
+      saved.mode = ["buy", "sell"].includes(saved.mode) ? saved.mode : saved.moduleCoverage.previousValueMode || "buy";
       persistSavedSilently(APP.getSaved().map((item) => String(item.id) === String(saved.id) ? saved : item));
 
       const labels = { inspection: "Inspection Only", value: "Value Analysis Only", full: "Full Assessment" };
@@ -151,6 +155,23 @@
       const overview = card.querySelector(":scope > .v123-inline-overview");
       if (overview) overview.outerHTML = details(saved);
       APP.toast?.(`Report type changed to ${labels[selected]}`);
+      return;
+    }
+
+    if (action.hasAttribute("data-v123-apply-analysis-intent")) {
+      const selected = card.querySelector("[data-v123-analysis-intent-select]")?.value;
+      if (!["buy", "sell"].includes(selected)) return;
+      const saved = APP.getSaved?.().find((item) => String(item.id) === String(vehicle.id));
+      if (!saved) return;
+      saved.mode = selected;
+      saved.moduleCoverage = { ...(saved.moduleCoverage || {}), previousValueMode: selected };
+      persistSavedSilently(APP.getSaved().map((item) => String(item.id) === String(saved.id) ? saved : item));
+
+      const badge = card.querySelector(".v12-vehicle-badges .v12-pill:not(.blue)");
+      if (badge) badge.textContent = selected === "buy" ? "Buying" : "Selling";
+      const overview = card.querySelector(":scope > .v123-inline-overview");
+      if (overview) overview.outerHTML = details(saved);
+      APP.toast?.(`Analysis intent changed to ${selected === "buy" ? "Buying" : "Selling"}`);
       return;
     }
 
@@ -190,7 +211,7 @@
     if (document.documentElement.dataset.v121ModuleRouter === "1") return;
     document.documentElement.dataset.v121ModuleRouter = "1";
     document.addEventListener("click", (event) => {
-      const action = event.target.closest("[data-v1214-upgrade], [data-v123-page], [data-v123-remove], [data-v123-apply-report-type]");
+      const action = event.target.closest("[data-v1214-upgrade], [data-v123-page], [data-v123-remove], [data-v123-apply-report-type], [data-v123-apply-analysis-intent]");
       if (!action) return;
       const card = action.closest(".v12-vehicle-card");
       if (!card) return;
