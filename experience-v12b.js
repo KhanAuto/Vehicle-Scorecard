@@ -18,6 +18,15 @@
     return valid.length ? valid.reduce((a, b) => a + b, 0) / valid.length : 0;
   }
 
+  function median(values) {
+    const valid = values.filter((v) => Number.isFinite(v) && v > 0).sort((a, b) => a - b);
+    if (!valid.length) return 0;
+    const middle = Math.floor(valid.length / 2);
+    return valid.length % 2 ? valid[middle] : (valid[middle - 1] + valid[middle]) / 2;
+  }
+
+  function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
+
   function money(value) {
     return value > 0 ? APP.money(value) : "—";
   }
@@ -94,19 +103,36 @@
   APP.conditionAssessment = condition;
 
   function market() {
-    const trade = avg([num("kbbTrade"), num("edmundsTrade"), num("instantOffer")]);
-    const privateGuide = avg([num("kbbPrivate"), num("edmundsPrivate"), num("privateComp")]);
-    const local = avg([num("dealer1"), num("dealer2"), num("privateComp")]);
-    let baseline = avg([privateGuide, local]);
-    if (!baseline && trade) baseline = trade * 1.15;
-
+    const tradeGuides = [num("kbbTrade"), num("edmundsTrade")].filter(Boolean);
+    const privateGuides = [num("kbbPrivate"), num("edmundsPrivate")].filter(Boolean);
+    const trade = median(tradeGuides);
+    const privateGuide = median(privateGuides);
+    const tradeFloor = Math.min(...[...tradeGuides, num("instantOffer")].filter(Boolean), Infinity);
     const currentMileage = Number(APP.value?.("mileage")) || 0;
-    const comparableMileage = num("compMileage");
-    let mileageFactor = 1;
-    if (baseline && currentMileage && comparableMileage) {
-      const diff = currentMileage - comparableMileage;
-      mileageFactor = Math.max(0.85, Math.min(1.15, 1 - (diff / 10000) * 0.015));
-    }
+    const currentYear = Number(APP.value?.("year")) || 0;
+    const normalizeComp = (prefix) => {
+      const price = num(`${prefix}Price`);
+      if (!price) return 0;
+      const compYear = num(`${prefix}Year`);
+      const compMileage = num(`${prefix}Mileage`);
+      const oldVehicle = currentYear && currentYear <= 1990;
+      const yearFactor = currentYear && compYear ? clamp(1 + (currentYear - compYear) * (oldVehicle ? 0.01 : 0.02), 0.85, 1.15) : 1;
+      const mileageRate = oldVehicle ? 0.005 : currentYear && currentYear <= 2005 ? 0.01 : 0.015;
+      const mileageFactor = currentMileage && compMileage ? clamp(1 + ((compMileage - currentMileage) / 10000) * mileageRate, oldVehicle ? 0.95 : 0.85, oldVehicle ? 1.05 : 1.15) : 1;
+      return price * yearFactor * mileageFactor;
+    };
+    const privateComps = [1,2,3].map((i) => normalizeComp(`private${i}`)).filter(Boolean);
+    const dealerComps = [1,2,3].map((i) => normalizeComp(`dealer${i}`)).filter(Boolean);
+    const privateMedian = median(privateComps);
+    const dealerMedian = median(dealerComps);
+    const dealerPrivateEquivalent = dealerMedian ? dealerMedian * 0.90 : 0;
+    const localBaseline = privateMedian && dealerMedian
+      ? privateMedian * 0.70 + dealerPrivateEquivalent * 0.30
+      : privateMedian || dealerPrivateEquivalent;
+    let baseline = localBaseline && privateGuide ? localBaseline * 0.80 + privateGuide * 0.20 : localBaseline || privateGuide;
+    if (!baseline && trade) baseline = trade * 1.15;
+    const local = median([...privateComps, ...dealerComps]);
+    const mileageFactor = 1;
 
     const c = condition();
     const inspected = c.pct !== null && c.coverage >= 25;
@@ -128,12 +154,15 @@
     const expectedSale = adjusted ? adjusted * 0.985 : 0;
     const list = adjusted ? adjusted * 1.035 : 0;
     const quick = asIs ? asIs * 0.91 : 0;
-    const refs = ["kbbTrade","kbbPrivate","edmundsTrade","edmundsPrivate","dealer1","dealer2","privateComp","instantOffer"].filter((id) => num(id) > 0).length;
-    const confidence = inspected
-      ? refs >= 4 && c.coverage >= 75 ? "High" : refs >= 2 ? "Moderate" : "Low"
-      : refs >= 4 ? "Moderate" : refs >= 2 ? "Preliminary" : "Low";
+    const localRefs = privateComps.length + dealerComps.length;
+    const guideRefs = tradeGuides.length + privateGuides.length + (num("instantOffer") ? 1 : 0);
+    const refs = localRefs + guideRefs;
+    const coverage = privateComps.length >= 3 && dealerComps.length >= 3 ? "Private + Dealer" : privateComps.length >= 3 ? "Private Only" : dealerComps.length >= 3 ? "Dealer Only" : localRefs ? "Sparse Local Data" : guideRefs ? "Guides Only" : "No Market Data";
+    const confidence = privateComps.length >= 3 && dealerComps.length >= 3
+      ? (inspected && c.coverage >= 75 ? "High" : "Moderate")
+      : privateComps.length >= 3 || dealerComps.length >= 3 ? "Moderate" : localRefs >= 3 ? "Preliminary" : refs >= 2 ? "Low" : "Insufficient";
 
-    return { trade, privateGuide, local, baseline, fairEstimate, adjusted, asIs, expectedSale, list, quick, refs, confidence, inspected, mileageFactor, condition: c, recon, conditionBasis, reportedCondition, knownRepairEstimate };
+    return { trade, tradeFloor: Number.isFinite(tradeFloor) ? tradeFloor : 0, privateGuide, privateMedian, dealerMedian, local, localBaseline, baseline, fairEstimate, adjusted, asIs, expectedSale, list, quick, refs, localRefs, guideRefs, coverage, confidence, inspected, mileageFactor, condition: c, recon, conditionBasis, reportedCondition, knownRepairEstimate };
   }
 
   APP.marketSnapshot = market;
@@ -311,7 +340,7 @@
   function progressRail(vehicle) {
     const p = vehicle.assessmentPath || (vehicle.layer === "condition" ? "inspection" : "full");
     const inspected = Object.keys(vehicle.ratings || {}).length > 0;
-    const hasMarket = ["kbbPrivate","edmundsPrivate","dealer1","dealer2","privateComp","instantOffer"].some((id) => Number(vehicle.fields?.[id]) > 0);
+    const hasMarket = ["kbbPrivate","edmundsPrivate","private1Price","private2Price","private3Price","dealer1Price","dealer2Price","dealer3Price","instantOffer"].some((id) => Number(vehicle.fields?.[id]) > 0);
     const hasValue = Boolean(Number(vehicle.fields?.buyAsk) || Number(vehicle.fields?.sellTarget) || Number(vehicle.fields?.buyResale));
     const hasRecon = Object.values(vehicle.recon || {}).some((x) => x.status && x.status !== "none");
     const steps = p === "inspection"
@@ -414,9 +443,11 @@
       status.insertAdjacentElement("afterend", panel);
     }
     const m = market();
+    const subjectMileage = document.getElementById("compMileage");
+    if (subjectMileage && !subjectMileage.value) subjectMileage.value = APP.value?.("mileage") || "";
     panel.innerHTML = `
-      <div class="v12-price-preview-head"><div><div class="v12-price-preview-title">Preliminary Pricing Assessment</div><div class="v12-price-preview-sub">${m.conditionBasis === "inspected" ? `Refined using the ${m.condition.pct}/100 (${m.condition.letter}) physical inspection.` : m.conditionBasis === "reported" ? `Uses the user-entered ${m.reportedCondition} reported condition; no physical inspection has been completed.` : "Uses a fair/typical condition assumption because no inspection or reported condition is available."}</div></div><span class="v12-pill ${m.refs >= 3 ? "green" : "amber"}">${m.confidence} confidence</span></div>
-      <div class="v12-price-grid"><div class="v12-price-cell"><small>Market baseline</small><strong>${money(m.baseline)}</strong></div><div class="v12-price-cell"><small>Mileage-adjusted</small><strong>${money(m.fairEstimate)}</strong></div><div class="v12-price-cell"><small>Estimated as-is</small><strong>${money(m.asIs)}</strong></div><div class="v12-price-cell"><small>References entered</small><strong>${m.refs}</strong></div></div>`;
+      <div class="v12-price-preview-head"><div><div class="v12-price-preview-title">Comparable Market Assessment</div><div class="v12-price-preview-sub">${m.coverage}. ${m.conditionBasis === "inspected" ? `Refined using the ${m.condition.pct}/100 (${m.condition.letter}) physical inspection.` : m.conditionBasis === "reported" ? `Uses the user-entered ${m.reportedCondition} reported condition; no physical inspection has been completed.` : "Uses a fair/typical condition assumption because no inspection or reported condition is available."}</div></div><span class="v12-pill ${m.confidence === "High" || m.confidence === "Moderate" ? "green" : "amber"}">${m.confidence} confidence</span></div>
+      <div class="v12-price-grid"><div class="v12-price-cell"><small>Private Median</small><strong>${money(m.privateMedian)}</strong></div><div class="v12-price-cell"><small>Dealer Median</small><strong>${money(m.dealerMedian)}</strong></div><div class="v12-price-cell"><small>Blended Baseline</small><strong>${money(m.baseline)}</strong></div><div class="v12-price-cell"><small>Trade Floor</small><strong>${money(m.tradeFloor)}</strong></div><div class="v12-price-cell"><small>Local Comps</small><strong>${m.localRefs}/6</strong></div><div class="v12-price-cell"><small>All References</small><strong>${m.refs}</strong></div></div>`;
   }
 
   function renderValueReadiness() {
