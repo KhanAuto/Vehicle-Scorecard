@@ -1,14 +1,12 @@
 (() => {
   "use strict";
 
-  const FULL_DRAWER = [
-    ["homePage", "Dashboard", "⌂"],
+  const REPORT_MODULES = [
     ["profilePage", "Vehicle", "🚘"],
     ["inspectionPage", "Inspection", "✓"],
     ["reconPage", "Recon", "🛠"],
     ["marketPage", "Market", "◫"],
-    ["dealPage", "Value", "$"],
-    ["savedPage", "Saved Vehicles", "▣"]
+    ["dealPage", "Value", "$"]
   ];
 
   function measureNavigationShell() {
@@ -27,25 +25,27 @@
     );
   }
 
-  function drawerIsComplete(container) {
-    const targets = [...container.querySelectorAll(".drawer-link")]
-      .map((button) => button.dataset.target);
-    return targets.length === FULL_DRAWER.length &&
-      FULL_DRAWER.every(([pageId], index) => targets[index] === pageId);
-  }
-
   function ensureFullDrawer() {
     const APP = window.VehicleScorecard;
     const container = document.getElementById("drawerPages");
-    if (!APP || !container || drawerIsComplete(container)) return;
+    if (!APP || !container || container.querySelector(".drawer-nav-group")) return;
 
-    container.innerHTML = FULL_DRAWER.map(([pageId, label, icon]) => `
-      <button class="drawer-link" data-target="${pageId}" type="button">
-        <span>${icon}</span>
-        <span class="txt">${label}</span>
+    container.dataset.groupedNavigation = "1";
+    container.innerHTML = `
+      <button class="drawer-link" data-target="homePage" type="button">
+        <span>⌂</span><span class="txt">Dashboard</span><span>›</span>
+      </button>
+      <details class="drawer-nav-group" open>
+        <summary><span>◆</span><span class="txt">Current Report</span><span class="drawer-group-chevron">⌄</span></summary>
+        <div class="drawer-nav-children">
+          ${REPORT_MODULES.map(([modulePage, label, icon]) => `<button class="drawer-link drawer-child" data-target="${modulePage}" type="button"><span>${icon}</span><span class="txt">${label}</span><span>›</span></button>`).join("")}
+        </div>
+      </details>
+      <button class="drawer-link" data-target="savedPage" type="button">
+        <span>▣</span><span class="txt">Saved Vehicles</span>
         <span>›</span>
       </button>
-    `).join("");
+    `;
 
     container.querySelectorAll(".drawer-link").forEach((button) => {
       button.addEventListener("click", () => {
