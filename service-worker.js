@@ -1,10 +1,10 @@
-const CACHE_NAME = "vehicle-scorecard-app-shell-v12-21";
+const CACHE_NAME = "vehicle-scorecard-app-shell-v12-22";
 
 const CORE_ASSETS = [
   "./", "./index.html", "./styles.css", "./core.js", "./inspection.js", "./intelligence.js", "./ui.js",
   "./theme-v12-pre.js", "./ui-base.js", "./guided-intake.js", "./guided-intake.css", "./navigation-v12.js",
   "./value-readiness.css", "./experience-v12.css", "./experience-v12b.js", "./garage-polish-v12.css",
-  "./garage-v12-2.css", "./garage-v12-2.js", "./garage-expand-v123.css", "./garage-expand-v123.js",
+  "./garage-v12-2.css", "./garage-v12-2.js", "./garage-expand-v123.css", "./garage-expand-v123.js", "./new-report-v122.css",
   "./nav-reset-v127.css", "./navigation-shell-v1210.css", "./navigation-shell-v1210.js", "./logo-mark.svg", "./manifest.webmanifest", "./version.json",
   "./icon-180.png", "./icon-192.png", "./icon-512.png"
 ];
