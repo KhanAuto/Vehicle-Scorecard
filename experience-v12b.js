@@ -339,13 +339,31 @@
     const saved = APP.getSaved?.().slice().reverse() || [];
     host.className = "card v12-garage";
     host.innerHTML = `
-      <div class="v12-garage-head"><div><h2>My Garage</h2><p>Research, inspect and revisit saved vehicles without starting over.</p></div><div class="v12-garage-actions"><button class="btn" id="v12All">View All</button></div></div>
-      <div class="v12-start-panel">
-        <button class="v12-start-choice inspection" data-v12-launch="inspection"><span class="v12-choice-icon">✓</span><b>Inspection Only</b><span>Vehicle is in front of you. Focus on physical condition, maintenance and risk.</span></button>
-        <button class="v12-start-choice value" data-v12-launch="value"><span class="v12-choice-icon">$</span><b>Value Analysis Only</b><span>Screen an online listing first and decide whether it is worth pursuing.</span></button>
-        <button class="v12-start-choice full" data-v12-launch="full"><span class="v12-choice-icon">◆</span><b>Full Assessment</b><span>Inspect first, capture recon needs, then use market and value data for the complete decision report.</span></button>
-      </div>
+      <div class="v12-garage-head"><div><h2>My Garage</h2><p>Research, inspect and revisit saved vehicles without starting over.</p></div><div class="v12-garage-actions"><button class="v12-new-button" id="v12NewReport">+ New Report</button><button class="btn" id="v12All">View All</button></div></div>
       <div class="v12-garage-list"></div>`;
+
+    let reportDialog = document.getElementById("v12NewReportDialog");
+    if (!reportDialog) {
+      reportDialog = document.createElement("dialog");
+      reportDialog.id = "v12NewReportDialog";
+      reportDialog.className = "v12-report-dialog";
+      reportDialog.innerHTML = `
+        <div class="v12-report-dialog-head"><div><small>NEW REPORT</small><h2>Choose assessment type</h2><p>Select how much analysis you want to complete.</p></div><button type="button" class="v12-dialog-close" aria-label="Close">×</button></div>
+        <div class="v12-report-choices">
+          <button type="button" class="v12-start-choice inspection" data-v12-launch="inspection"><span class="v12-choice-icon">✓</span><b>Inspection Only</b><span>Assess physical condition, maintenance, safety and risk.</span></button>
+          <button type="button" class="v12-start-choice value" data-v12-launch="value"><span class="v12-choice-icon">$</span><b>Value Analysis Only</b><span>Evaluate asking price, market references and buying or selling value.</span></button>
+          <button type="button" class="v12-start-choice full" data-v12-launch="full"><span class="v12-choice-icon">◆</span><b>Full Assessment</b><span>Combine inspection, recon, market research and value analysis.</span></button>
+        </div>`;
+      document.body.appendChild(reportDialog);
+      reportDialog.querySelector(".v12-dialog-close")?.addEventListener("click", () => reportDialog.close());
+      reportDialog.addEventListener("click", (event) => {
+        if (event.target === reportDialog) reportDialog.close();
+      });
+      reportDialog.querySelectorAll("[data-v12-launch]").forEach((button) => button.addEventListener("click", () => {
+        reportDialog.close();
+        launchNew(button.dataset.v12Launch);
+      }));
+    }
 
     document.querySelector("#homePage .dashboard-grid")?.classList.add("v12-hidden");
     const list = host.querySelector(".v12-garage-list");
@@ -372,7 +390,7 @@
     });
 
     host.querySelector("#v12All")?.addEventListener("click", () => APP.showPage?.("savedPage"));
-    host.querySelectorAll("[data-v12-launch]").forEach((button) => button.addEventListener("click", () => launchNew(button.dataset.v12Launch)));
+    host.querySelector("#v12NewReport")?.addEventListener("click", () => reportDialog.showModal());
 
     // Notify the garage-specific enhancers after the card DOM has actually
     // been rebuilt so persisted photos and expand behavior attach to this render.
