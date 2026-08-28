@@ -44,6 +44,7 @@
     const priceTwoLabel=selling?"CURRENT AS-IS VALUE":"ESTIMATED MARKET VALUE";
     const priceTwo=selling?(Number(f.sellAsIs)||0):(Number(f.buyResale)||0);
     const gradeWasCapped=score!==null&&grade!=="—"&&grade!==baseGrade(score);
+    const reportType=["inspection","value","full"].includes(vehicle.assessmentPath)?vehicle.assessmentPath:(vehicle.layer==="condition"?"inspection":"full");
     const upgradeActions=[
       ratings?"":'<button type="button" class="btn" data-v1214-upgrade="inspection">+ Add Inspection</button>',
       market?"":'<button type="button" class="btn" data-v1214-upgrade="market">+ Add Market & Value</button>',
@@ -59,6 +60,11 @@
         <div><small>${priceTwoLabel}</small><strong>${money(priceTwo)}</strong><span>${selling?"Estimated value before planned work":"Condition-adjusted comparison value"}</span></div>
       </div>
       <div class="v123-vehicle-facts"><span>${f.mileage ? `${Number(f.mileage).toLocaleString()} miles` : "Mileage unknown"}</span>${f.vin?`<span>VIN ${f.vin}</span>`:""}${f.title?`<span>${f.title} title</span>`:""}</div>
+      <div class="v123-report-type">
+        <label><span>Active Report Type</span><select data-v123-report-type-select><option value="inspection" ${reportType==="inspection"?"selected":""}>Inspection Only</option><option value="value" ${reportType==="value"?"selected":""}>Value Analysis Only</option><option value="full" ${reportType==="full"?"selected":""}>Full Assessment</option></select></label>
+        <button type="button" class="btn primary" data-v123-apply-report-type>Apply Report Type</button>
+        <small>Previously entered modules are preserved if you switch report types.</small>
+      </div>
       <div class="v123-actions">
         ${targetButton("Edit Vehicle Details","profilePage")}
         ${targetButton("View Inspection","inspectionPage")}
@@ -123,6 +129,31 @@
     const vehicle = savedFor(card);
     if (!vehicle) return;
 
+    if (action.hasAttribute("data-v123-apply-report-type")) {
+      const selected = card.querySelector("[data-v123-report-type-select]")?.value;
+      if (!["inspection", "value", "full"].includes(selected)) return;
+      const saved = APP.getSaved?.().find((item) => String(item.id) === String(vehicle.id));
+      if (!saved) return;
+      saved.moduleCoverage = saved.moduleCoverage || {};
+      if (["value", "full"].includes(saved.assessmentPath) && ["buy", "sell"].includes(saved.mode)) {
+        saved.moduleCoverage.previousValueMode = saved.mode;
+      }
+      saved.assessmentPath = selected;
+      saved.layer = selected === "inspection" ? "condition" : "value";
+      saved.mode = selected === "inspection"
+        ? "inspect"
+        : (["buy", "sell"].includes(saved.mode) ? saved.mode : saved.moduleCoverage.previousValueMode || "buy");
+      persistSavedSilently(APP.getSaved().map((item) => String(item.id) === String(saved.id) ? saved : item));
+
+      const labels = { inspection: "Inspection Only", value: "Value Analysis Only", full: "Full Assessment" };
+      const badge = card.querySelector(".v12-vehicle-badges .v12-pill.blue");
+      if (badge) badge.textContent = labels[selected];
+      const overview = card.querySelector(":scope > .v123-inline-overview");
+      if (overview) overview.outerHTML = details(saved);
+      APP.toast?.(`Report type changed to ${labels[selected]}`);
+      return;
+    }
+
     if (action.hasAttribute("data-v123-remove")) {
       if (!confirm(`Remove ${nameFor(vehicle)} from My Garage?`)) return;
       APP.saveList?.((APP.getSaved?.() || []).filter((saved) => String(saved.id) !== String(vehicle.id)));
@@ -159,7 +190,7 @@
     if (document.documentElement.dataset.v121ModuleRouter === "1") return;
     document.documentElement.dataset.v121ModuleRouter = "1";
     document.addEventListener("click", (event) => {
-      const action = event.target.closest("[data-v1214-upgrade], [data-v123-page], [data-v123-remove]");
+      const action = event.target.closest("[data-v1214-upgrade], [data-v123-page], [data-v123-remove], [data-v123-apply-report-type]");
       if (!action) return;
       const card = action.closest(".v12-vehicle-card");
       if (!card) return;
