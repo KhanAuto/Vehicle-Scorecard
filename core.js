@@ -549,25 +549,10 @@
     const sellTarget = APP.numberFrom("sellTarget");
     const sellingCosts = APP.numberFrom("sellCosts");
 
-    let broker = 0;
-
-    if (APP.value("brokerType") === "flat") {
-      broker = APP.numberFrom("brokerFlat");
-    }
-
-    if (APP.value("brokerType") === "percent") {
-      broker = Math.max(
-        sellTarget * APP.numberFrom("brokerPercent") / 100,
-        APP.numberFrom("brokerMinimum")
-      );
-    }
-
-    const beforeBroker = Math.max(0, sellTarget - sellRecon - sellingCosts);
+    const sellerTakeHome = Math.max(0, sellTarget - sellRecon - sellingCosts);
 
     APP.$("#sellReconUsed").textContent = APP.money(sellRecon);
-    APP.$("#sellNet").textContent = APP.money(beforeBroker);
-    APP.$("#brokerEarnings").textContent = APP.money(broker);
-    APP.$("#sellerNetAfterBroker").textContent = APP.money(Math.max(0, beforeBroker - broker));
+    APP.$("#sellNet").textContent = APP.money(sellerTakeHome);
     APP.$("#reconBenefit").textContent = APP.money(postRecon - asIs - sellRecon);
 
     let pricingCheck = "—";
@@ -653,8 +638,7 @@
     "marketRadius", "compMileage", "marketNotes", "kbbTrade", "kbbPrivate",
     "edmundsTrade", "edmundsPrivate", "dealer1", "dealer2", "privateComp",
     "instantOffer", "sellAsIs", "sellPostRecon", "sellList", "sellTarget",
-    "sellQuick", "sellFloor", "sellCosts", "sellReconMode", "brokerType",
-    "brokerFlat", "brokerPercent", "brokerMinimum", "buyIntent", "buyAsk", "buyTarget",
+    "sellQuick", "sellFloor", "sellCosts", "sellReconMode", "buyIntent", "buyAsk", "buyTarget",
     "buyResale", "requiredProfit", "buyFees", "buyAcqCosts", "buySellingCosts",
     "buyReconMode", "knownCondition", "knownRepairEstimate", "knownRepairs",
     "decision", "status", "followup", "notes"
