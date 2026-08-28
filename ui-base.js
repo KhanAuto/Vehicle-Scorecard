@@ -633,14 +633,14 @@
     ) {
       financialMetrics =
         reportMetric(
-          "Current As-Is Value",
+          "Estimated As-Is Value",
           APP.money(
             APP.value("sellAsIs")
           ),
           "Current estimate before repairs"
         ) +
         reportMetric(
-          "Expected Selling Price",
+          "Projected Sale Price",
           APP.money(
             APP.value("sellTarget")
           ),
