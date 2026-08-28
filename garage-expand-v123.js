@@ -79,7 +79,7 @@
   async function openPage(vehicle,page){
     if(!vehicle) return;
     vehicle = upgradeVehiclePath(vehicle, page);
-    await APP.loadSaved?.(vehicle.id);
+    await APP.loadSaved?.(vehicle.id, page);
     if (vehicle.assessmentPath === "full") {
       APP.setAssessmentPath?.("full");
       APP.setLayer?.("value");
@@ -121,10 +121,10 @@
           saved.layer = "value";
           APP.saveList?.(APP.getSaved().map(v => v.id === saved.id ? saved : v));
         }
-        await APP.loadSaved?.(vehicle.id);
+        const page = kind === "market" ? "marketPage" : "inspectionPage";
+        await APP.loadSaved?.(vehicle.id, page);
         APP.setAssessmentPath?.("full");
         APP.setLayer?.("value");
-        const page = kind === "market" ? "marketPage" : "inspectionPage";
         if (page === "inspectionPage") APP.inspection?.render?.();
         APP.showPage?.(page);
         APP.toast?.("Existing vehicle information preserved. Add the missing module when ready.");
