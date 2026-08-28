@@ -44,6 +44,14 @@
     if (currentStep >= 2) updateVehicleSummary();
     const directive = APP.$("#directiveChoices");
     if (directive) directive.classList.toggle("hidden", selectedPurpose === "inspection");
+    if (currentStep === 3 && selectedPurpose !== "inspection") {
+      const storedMode = APP.getMode?.();
+      if (["buy", "sell"].includes(storedMode)) selectedDirective = storedMode;
+      APP.$$('[data-guided-directive]').forEach((button) => {
+        button.classList.toggle("selected", button.dataset.guidedDirective === selectedDirective);
+      });
+      syncDirectiveQuestions(selectedDirective);
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -86,6 +94,42 @@
       const active = button.dataset.guidedDirective === mode;
       button.classList.toggle("selected", active);
     });
+    syncDirectiveQuestions(mode);
+  }
+
+  function syncDirectiveQuestions(mode = selectedDirective) {
+    const panel = APP.$("#directiveQuestions");
+    if (!panel) return;
+    panel.classList.toggle("hidden", !["buy", "sell"].includes(mode));
+    APP.$("#buyDirectiveQuestions")?.classList.toggle("hidden", mode !== "buy");
+    APP.$("#sellDirectiveQuestions")?.classList.toggle("hidden", mode !== "sell");
+
+    const pairs = mode === "buy"
+      ? [["intakeBuyAsk","buyAsk"],["intakeBuyTarget","buyTarget"],["intakeBuyIntent","buyIntent"]]
+      : [["intakeSellAsIs","sellAsIs"],["intakeSellTarget","sellTarget"],["intakeSellFloor","sellFloor"]];
+    pairs.forEach(([mirrorId, sourceId]) => {
+      const mirror = APP.$(`#${mirrorId}`);
+      const source = APP.$(`#${sourceId}`);
+      if (mirror && source) mirror.value = source.value || "";
+    });
+  }
+
+  function bindDirectiveQuestions() {
+    const pairs = [
+      ["intakeBuyAsk","buyAsk"],["intakeBuyTarget","buyTarget"],["intakeBuyIntent","buyIntent"],
+      ["intakeSellAsIs","sellAsIs"],["intakeSellTarget","sellTarget"],["intakeSellFloor","sellFloor"]
+    ];
+    pairs.forEach(([mirrorId, sourceId]) => {
+      const mirror = APP.$(`#${mirrorId}`);
+      const source = APP.$(`#${sourceId}`);
+      if (!mirror || !source) return;
+      const sync = () => {
+        source.value = mirror.value;
+        source.dispatchEvent(new Event("input", { bubbles: true }));
+      };
+      mirror.addEventListener("input", sync);
+      mirror.addEventListener("change", sync);
+    });
   }
 
   function buildWizard() {
@@ -126,6 +170,10 @@
       <div class="intake-step" data-intake-step="3">
         <div class="title">Additional Vehicle Details</div><div class="hint">Add ownership and history details now if you know them. You can return and expand this vehicle profile at any time.</div>
         <div id="directiveChoices" class="directive-panel hidden"><div class="selector-label">For this value analysis, are you:</div><div class="assessment-layer-grid directive-grid"><button type="button" class="assessment-choice" data-guided-directive="buy"><b>Buying</b><span>Evaluate acquisition cost, risk, maximum sensible purchase price and expected value.</span></button><button type="button" class="assessment-choice" data-guided-directive="sell"><b>Selling</b><span>Evaluate current value, worthwhile recon, expected proceeds and sale strategy.</span></button></div></div>
+        <div id="directiveQuestions" class="directive-questions hidden">
+          <div id="buyDirectiveQuestions" class="directive-question-set hidden"><div class="directive-question-head"><b>Buying details</b><span>These values will carry into the Value module.</span></div><div class="grid3 field-grid"><label>List Price <span class="v1214-field-badge required">Required</span><input id="intakeBuyAsk" inputmode="decimal"><span class="field-help">The seller's advertised asking price.</span></label><label>Target Purchase Price <span class="v1214-field-badge optional">Optional</span><input id="intakeBuyTarget" inputmode="decimal"><span class="field-help">What you plan to offer or pay.</span></label><label>Purchase Intent<select id="intakeBuyIntent"><option value="ownership">Personal Use / Ownership</option><option value="flip">Resale / Flip</option></select><span class="field-help">Profitability is only used for Resale / Flip.</span></label></div></div>
+          <div id="sellDirectiveQuestions" class="directive-question-set hidden"><div class="directive-question-head"><b>Selling details</b><span>These values will carry into the Value module.</span></div><div class="grid3 field-grid"><label>Current As-Is Value <span class="v1214-field-badge required">Required</span><input id="intakeSellAsIs" inputmode="decimal"><span class="field-help">What the vehicle is realistically worth today.</span></label><label>Expected Sale Price <span class="v1214-field-badge required">Required</span><input id="intakeSellTarget" inputmode="decimal"><span class="field-help">What you realistically expect a buyer to pay.</span></label><label>Seller Minimum Net <span class="v1214-field-badge optional">Optional</span><input id="intakeSellFloor" inputmode="decimal"><span class="field-help">Your minimum acceptable proceeds after costs.</span></label></div></div>
+        </div>
         <div class="grid4 field-grid" id="miscVehicleFields"></div><div id="guidedRecallTools" class="toolbar inline-toolbar no-print"></div><div id="guidedRecall"></div>
         <div class="intake-actions"><button class="btn" data-intake-back="2">← Mileage</button><button class="btn primary" id="intakeFinish">Continue Assessment →</button></div>
       </div>`;
@@ -157,6 +205,7 @@
     APP.$("#showVinEntry").onclick = () => showEntry("vin");
     APP.$("#showManualEntry").onclick = () => showEntry("manual");
     APP.$$('[data-guided-directive]').forEach((button) => button.addEventListener("click", () => chooseDirective(button.dataset.guidedDirective)));
+    bindDirectiveQuestions();
     APP.$("#intakeVehicleNext").onclick = () => { if (requireVehicle()) showStep(2); };
     APP.$("#intakeMileageNext").onclick = () => {
       if (!APP.$("#mileageUnknown").checked && !APP.value("mileage").trim()) {
