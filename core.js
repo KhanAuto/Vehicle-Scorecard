@@ -501,6 +501,10 @@
 
     APP.$("#scoreAdjustedMarket").textContent =
       APP.money(snapshot?.adjusted || average([privateAverage, localAverage]) * factor);
+    APP.$("#marketDownside").textContent = APP.money(snapshot?.marketDownside || 0);
+    APP.$("#guaranteedCashExit").textContent = APP.money(snapshot?.guaranteedCashExit || 0);
+    APP.$("#effectiveTradeValue").textContent = APP.money(snapshot?.effectiveTradeValue || 0);
+    APP.$("#bestGuaranteedExit").textContent = APP.money(snapshot?.bestGuaranteedExit || 0);
 
     updateLinks();
     updateValue();
@@ -636,7 +640,8 @@
     "edmundsTrade", "edmundsPrivate",
     "private1Price", "private1Year", "private1Mileage", "private2Price", "private2Year", "private2Mileage", "private3Price", "private3Year", "private3Mileage",
     "dealer1Price", "dealer1Year", "dealer1Mileage", "dealer2Price", "dealer2Year", "dealer2Mileage", "dealer3Price", "dealer3Year", "dealer3Mileage",
-    "instantOffer", "sellAsk", "sellAsIs", "sellPostRecon", "sellList", "sellTarget",
+    "estimatedWholesale", "instantOffer", "instantOfferDate", "instantOffer2", "instantOffer2Date", "dealerCashOffer", "dealerCashOfferDate", "actualTradeOffer", "tradeTaxBenefit", "tradeApplies", "actualTradeOfferDate",
+    "sellAsk", "sellAsIs", "sellPostRecon", "sellList", "sellTarget",
     "sellQuick", "sellFloor", "sellCosts", "sellReconMode", "buyIntent", "buyAsk", "buyTarget",
     "buyResale", "requiredProfit", "buyFees", "buyAcqCosts", "buySellingCosts",
     "buyReconMode", "knownCondition", "knownRepairEstimate", "knownRepairs",
