@@ -234,9 +234,12 @@
       return Boolean(
         APP.numberFrom("kbbPrivate") ||
         APP.numberFrom("edmundsPrivate") ||
-        APP.numberFrom("dealer1") ||
-        APP.numberFrom("dealer2") ||
-        APP.numberFrom("privateComp") ||
+        APP.numberFrom("private1Price") ||
+        APP.numberFrom("private2Price") ||
+        APP.numberFrom("private3Price") ||
+        APP.numberFrom("dealer1Price") ||
+        APP.numberFrom("dealer2Price") ||
+        APP.numberFrom("dealer3Price") ||
         APP.numberFrom("instantOffer")
       );
     }
