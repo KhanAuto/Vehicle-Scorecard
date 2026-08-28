@@ -846,13 +846,34 @@
     APP.showPage?.(destinationPage || "profilePage");
   };
 
+  const savedSelection = new Set();
+
   APP.renderSaved = () => {
     const host = APP.$("#savedList");
     if (!host) return;
 
-    host.innerHTML = "";
+    const savedVehicles = APP.getSaved().slice().reverse();
+    [...savedSelection].forEach((id) => {
+      if (!savedVehicles.some((vehicle) => String(vehicle.id) === String(id))) savedSelection.delete(id);
+    });
+    host.innerHTML = `<div class="saved-bulk-bar">
+      <label><input type="checkbox" id="savedSelectAll"> Select all</label>
+      <span id="savedSelectedCount">0 selected</span>
+      <button type="button" class="btn" id="compareSelected" disabled>Compare Selected</button>
+      <button type="button" class="btn danger" id="deleteSelected" disabled>Delete Selected</button>
+    </div><div id="savedBulkCards"></div>`;
+    const cardHost = APP.$("#savedBulkCards");
 
-    APP.getSaved().slice().reverse().forEach((vehicle) => {
+    const updateBulkControls = () => {
+      const count = savedSelection.size;
+      APP.$("#savedSelectedCount").textContent = `${count} selected`;
+      APP.$("#compareSelected").disabled = count < 2;
+      APP.$("#deleteSelected").disabled = count === 0;
+      APP.$("#savedSelectAll").checked = Boolean(savedVehicles.length) && count === savedVehicles.length;
+      APP.$("#savedSelectAll").indeterminate = count > 0 && count < savedVehicles.length;
+    };
+
+    savedVehicles.forEach((vehicle) => {
       const card = document.createElement("div");
       card.className = "saved-card";
 
@@ -867,10 +888,15 @@
           ? `${Number(fields.mileage).toLocaleString()} miles`
           : "Mileage not entered";
 
-      card.innerHTML = `
+      card.innerHTML = `<label class="saved-select"><input type="checkbox" data-saved-select="${vehicle.id}" ${savedSelection.has(vehicle.id) ? "checked" : ""}><span>Select</span></label>
         <div class="vehicle-name">${name}</div>
         <div class="muted">${mileage} · ${vehicle.score?.pct || "No score"}</div>
       `;
+
+      card.querySelector("[data-saved-select]").addEventListener("change", (event) => {
+        if (event.target.checked) savedSelection.add(vehicle.id); else savedSelection.delete(vehicle.id);
+        updateBulkControls();
+      });
 
       const open = document.createElement("button");
       open.className = "btn";
@@ -887,8 +913,31 @@
       });
 
       card.append(open, remove);
-      host.appendChild(card);
+      cardHost.appendChild(card);
     });
+
+    APP.$("#savedSelectAll").addEventListener("change", (event) => {
+      savedSelection.clear();
+      if (event.target.checked) savedVehicles.forEach((vehicle) => savedSelection.add(vehicle.id));
+      APP.$$('[data-saved-select]').forEach((checkbox) => { checkbox.checked = event.target.checked; });
+      updateBulkControls();
+    });
+    APP.$("#deleteSelected").addEventListener("click", () => {
+      if (!savedSelection.size || !confirm(`Delete ${savedSelection.size} selected vehicle${savedSelection.size === 1 ? "" : "s"}?`)) return;
+      const ids = new Set([...savedSelection].map(String));
+      savedSelection.clear();
+      ids.forEach((id) => compareSet.delete(id));
+      APP.saveList(APP.getSaved().filter((vehicle) => !ids.has(String(vehicle.id))));
+      APP.renderCompare();
+      APP.toast("Selected vehicles deleted");
+    });
+    APP.$("#compareSelected").addEventListener("click", () => {
+      compareSet.clear();
+      savedSelection.forEach((id) => compareSet.add(id));
+      APP.renderCompare();
+      APP.$("#comparePicker")?.closest(".card")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    updateBulkControls();
   };
 
   const compareSet = new Set();
