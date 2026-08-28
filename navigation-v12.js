@@ -111,16 +111,36 @@
 
   function navigate(direction) {
     const current = activePage();
-    const f = flow();
-    const index = f.findIndex(([id]) => id === current);
-    if (index < 0) return;
     if (direction === "next" && current === "profilePage") {
       const missing = APP.validateVehicleProfile?.() || [];
       if (missing.length) {
         alert(`Complete required vehicle information: ${missing.join(", ")}.`);
         return;
       }
+
+      // Older Value Analysis records can arrive here with the original value
+      // path even after the user chose Add Inspection. Reconcile the pending
+      // module before calculating the next page so Vehicle always proceeds to
+      // the actual physical-condition assessment instead of Market.
+      const editingId = APP.state?.editingId;
+      const saved = (APP.getSaved?.() || []).find((vehicle) =>
+        String(vehicle.id) === String(editingId)
+      );
+      if (saved?.moduleCoverage?.inspectionStarted) {
+        setPath("full");
+        APP.setLayer?.("value");
+        if (saved.assessmentPath !== "full") {
+          saved.assessmentPath = "full";
+          saved.layer = "value";
+          APP.saveList?.((APP.getSaved?.() || []).map((vehicle) =>
+            String(vehicle.id) === String(saved.id) ? saved : vehicle
+          ));
+        }
+      }
     }
+    const f = flow();
+    const index = f.findIndex(([id]) => id === current);
+    if (index < 0) return;
     const target = direction === "next"
       ? (f[Math.min(index + 1, f.length - 1)]?.[0] || "homePage")
       : (index > 0 ? f[index - 1][0] : "homePage");
