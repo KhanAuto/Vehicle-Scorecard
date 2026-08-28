@@ -5,6 +5,7 @@ document.write(
   '<link rel="stylesheet" href="garage-polish-v12.css">' +
   '<link rel="stylesheet" href="garage-v12-2.css">' +
   '<link rel="stylesheet" href="garage-expand-v123.css">' +
+  '<link rel="stylesheet" href="new-report-v122.css">' +
   '<link rel="stylesheet" href="nav-reset-v127.css">' +
   '<link rel="stylesheet" href="navigation-shell-v1210.css">' +
   '<script src="theme-v12-pre.js"></script>' +
