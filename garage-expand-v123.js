@@ -100,7 +100,50 @@
   function cleanLegacyOverview(){
     document.querySelectorAll("#homePage > #dashboardReport, #homePage .v12-vehicle-dashboard").forEach(el=>el.classList.add("v123-hide-legacy-overview"));
   }
+  async function routeCapturedAction(action, card) {
+    const vehicle = savedFor(card);
+    if (!vehicle) return;
+
+    const upgradeKind = action.dataset.v1214Upgrade;
+    if (upgradeKind) {
+      const saved = APP.getSaved?.().find((v) => String(v.id) === String(vehicle.id));
+      if (!saved) return;
+      saved.moduleCoverage = saved.moduleCoverage || {};
+      if (upgradeKind === "inspection") saved.moduleCoverage.inspectionStarted = true;
+      if (upgradeKind === "market") saved.moduleCoverage.valueStarted = true;
+      if (upgradeKind === "full") saved.moduleCoverage.fullRequested = true;
+      saved.assessmentPath = "full";
+      saved.layer = "value";
+      persistSavedSilently(APP.getSaved().map((v) => String(v.id) === String(saved.id) ? saved : v));
+
+      const page = upgradeKind === "market" ? "marketPage" : "inspectionPage";
+      APP.setAssessmentPath?.("full");
+      APP.setLayer?.("value");
+      await APP.loadSaved?.(vehicle.id, page);
+      if (page === "inspectionPage") APP.inspection?.render?.();
+      APP.showPage?.(page);
+      APP.toast?.("Existing vehicle information preserved. Add the missing module when ready.");
+      return;
+    }
+
+    const page = action.dataset.v123Page;
+    if (page) await openPage(vehicle, page);
+  }
+  function installCapturedActionRouter() {
+    if (document.documentElement.dataset.v121ModuleRouter === "1") return;
+    document.documentElement.dataset.v121ModuleRouter = "1";
+    document.addEventListener("click", (event) => {
+      const action = event.target.closest("[data-v1214-upgrade], [data-v123-page]");
+      if (!action) return;
+      const card = action.closest(".v12-vehicle-card");
+      if (!card) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      routeCapturedAction(action, card);
+    }, true);
+  }
   function install(){
+    installCapturedActionRouter();
     const host = document.getElementById("quickSaved");
     if (!host || host.dataset.v126Expand === "1") { cleanLegacyOverview(); return; }
     host.dataset.v126Expand = "1";
