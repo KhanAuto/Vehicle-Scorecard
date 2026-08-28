@@ -1,0 +1,19 @@
+
+.v1214-upgrade{margin-top:16px;padding-top:14px;border-top:1px solid var(--line,#334155)}
+.v1214-upgrade-title{font-weight:800;margin-bottom:3px}
+.v1214-upgrade-copy{font-size:.9rem;opacity:.75;margin-bottom:10px}
+.v1214-upgrade-actions{display:flex;gap:8px;flex-wrap:wrap}
+.v1214-help{padding:0!important;overflow:hidden}
+.v1214-help summary{cursor:pointer;padding:14px 16px;font-weight:800;display:flex;justify-content:space-between;gap:12px}
+.v1214-help summary span{font-size:.78rem;opacity:.65;font-weight:600}
+.v1214-help p{margin:0;padding:0 16px 14px;line-height:1.55}
+.v1214-help-key{display:grid;grid-template-columns:auto 1fr;gap:7px 10px;padding:0 16px 16px;align-items:center;font-size:.85rem}
+.v1214-key,.v1214-field-badge{display:inline-flex;width:max-content;border-radius:999px;padding:2px 7px;font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+.v1214-field-badge{margin:0 6px 5px 0}
+.v1214-key.required,.v1214-field-badge.required{background:rgba(245,158,11,.16);border:1px solid rgba(245,158,11,.5)}
+.v1214-key.optional,.v1214-field-badge.optional{background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.35)}
+.v1214-completion{display:flex;gap:8px;flex-direction:column}
+.v1214-completion.complete{border-left:4px solid #22c55e}
+.v1214-completion.attention{border-left:4px solid #f59e0b}
+.v1214-completion span{opacity:.8;line-height:1.45}
+@media(max-width:640px){.v1214-upgrade-actions .btn{width:100%}.v1214-help-key{grid-template-columns:1fr}}

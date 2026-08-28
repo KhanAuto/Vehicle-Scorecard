@@ -347,6 +347,7 @@
       const letter = vehicle.conditionGrade || (score ? numericGrade(score) : "—");
       const card = document.createElement("div");
       card.className = "v12-vehicle-card";
+      card.dataset.vehicleId = vehicle.id;
       card.innerHTML = `
         <div class="v12-vehicle-photo"><div class="v12-photo-empty">Finding representative image…</div></div>
         <div><div class="v12-vehicle-title">${vehicleName(vehicle)}</div><div class="v12-vehicle-meta">${vehicle.mileageUnknown ? "Mileage unknown" : vehicle.fields?.mileage ? `${Number(vehicle.fields.mileage).toLocaleString()} mi` : "Mileage not entered"}${vehicle.fields?.vin ? ` · ${vehicle.fields.vin}` : ""}</div>

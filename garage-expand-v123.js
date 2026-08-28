@@ -41,6 +41,15 @@
         ${targetButton("View Market","marketPage")}
         ${targetButton("View Value Analysis","dealPage")}
       </div>
+      <div class="v1214-upgrade">
+        <div class="v1214-upgrade-title">Build on this assessment</div>
+        <div class="v1214-upgrade-copy">Keep everything already entered and stack additional analysis on top of it.</div>
+        <div class="v1214-upgrade-actions">
+          ${ratings ? "" : '<button type="button" class="btn" data-v1214-upgrade="inspection">+ Add Inspection</button>'}
+          ${market ? "" : '<button type="button" class="btn" data-v1214-upgrade="market">+ Add Market & Value</button>'}
+          ${(vehicle.assessmentPath || "") === "full" ? "" : '<button type="button" class="btn primary" data-v1214-upgrade="full">Complete Full Assessment</button>'}
+        </div>
+      </div>
     </div>`;
   }
   async function openPage(vehicle,page){
@@ -67,6 +76,20 @@
       const card = event.target.closest(".v12-vehicle-card");
       if (!card || !host.contains(card)) return;
       const vehicle = savedFor(card);
+      const upgrade = event.target.closest("[data-v1214-upgrade]");
+      if (upgrade) {
+        event.preventDefault();
+        event.stopPropagation();
+        if (!vehicle) return;
+        await APP.loadSaved?.(vehicle.id);
+        APP.setAssessmentPath?.("full");
+        APP.saveCurrent?.();
+        const kind = upgrade.dataset.v1214Upgrade;
+        const page = kind === "market" ? "marketPage" : "inspectionPage";
+        APP.showPage?.(page);
+        APP.toast?.("Existing vehicle information preserved. Add the missing module when ready.");
+        return;
+      }
       const jump = event.target.closest("[data-v123-page]");
       if (jump) {
         event.preventDefault();
