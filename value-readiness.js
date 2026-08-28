@@ -7,7 +7,7 @@
   const SPECS = {
     sell: {
       required: [
-        { id: "sellAsk", label: "Your Asking Price", why: "Establishes the price you are advertising or plan to advertise." },
+        { id: "sellAsk", label: "Asking Price", why: "Establishes the advertised or planned listing price." },
         { id: "sellFloor", label: "Minimum Acceptable Price", why: "Establishes the lowest sale price you are willing to accept." }
       ],
       recommended: [
