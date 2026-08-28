@@ -107,7 +107,15 @@
     const privateGuides = [num("kbbPrivate"), num("edmundsPrivate")].filter(Boolean);
     const trade = median(tradeGuides);
     const privateGuide = median(privateGuides);
-    const tradeFloor = Math.min(...[...tradeGuides, num("instantOffer")].filter(Boolean), Infinity);
+    const offerIsCurrent = (dateId) => {
+      const date = String(APP.value?.(dateId) || "");
+      return !date || date >= new Date().toISOString().slice(0, 10);
+    };
+    const activeOffer = (amountId, dateId) => offerIsCurrent(dateId) ? num(amountId) : 0;
+    const marketDownside = num("estimatedWholesale") || Math.min(...tradeGuides, Infinity);
+    const guaranteedCashExit = Math.max(activeOffer("instantOffer", "instantOfferDate"), activeOffer("instantOffer2", "instantOffer2Date"), activeOffer("dealerCashOffer", "dealerCashOfferDate"));
+    const effectiveTradeValue = activeOffer("actualTradeOffer", "actualTradeOfferDate") ? activeOffer("actualTradeOffer", "actualTradeOfferDate") + num("tradeTaxBenefit") : 0;
+    const bestGuaranteedExit = Math.max(guaranteedCashExit, APP.value?.("tradeApplies") === "yes" ? effectiveTradeValue : 0);
     const currentMileage = Number(APP.value?.("mileage")) || 0;
     const currentYear = Number(APP.value?.("year")) || 0;
     const normalizeComp = (prefix) => {
@@ -155,14 +163,14 @@
     const list = adjusted ? adjusted * 1.035 : 0;
     const quick = asIs ? asIs * 0.91 : 0;
     const localRefs = privateComps.length + dealerComps.length;
-    const guideRefs = tradeGuides.length + privateGuides.length + (num("instantOffer") ? 1 : 0);
+    const guideRefs = tradeGuides.length + privateGuides.length;
     const refs = localRefs + guideRefs;
     const coverage = privateComps.length >= 3 && dealerComps.length >= 3 ? "Private + Dealer" : privateComps.length >= 3 ? "Private Only" : dealerComps.length >= 3 ? "Dealer Only" : localRefs ? "Sparse Local Data" : guideRefs ? "Guides Only" : "No Market Data";
     const confidence = privateComps.length >= 3 && dealerComps.length >= 3
       ? (inspected && c.coverage >= 75 ? "High" : "Moderate")
       : privateComps.length >= 3 || dealerComps.length >= 3 ? "Moderate" : localRefs >= 3 ? "Preliminary" : refs >= 2 ? "Low" : "Insufficient";
 
-    return { trade, tradeFloor: Number.isFinite(tradeFloor) ? tradeFloor : 0, privateGuide, privateMedian, dealerMedian, local, localBaseline, baseline, fairEstimate, adjusted, asIs, expectedSale, list, quick, refs, localRefs, guideRefs, coverage, confidence, inspected, mileageFactor, condition: c, recon, conditionBasis, reportedCondition, knownRepairEstimate };
+    return { trade, marketDownside: Number.isFinite(marketDownside) ? marketDownside : 0, guaranteedCashExit, effectiveTradeValue, bestGuaranteedExit, privateGuide, privateMedian, dealerMedian, local, localBaseline, baseline, fairEstimate, adjusted, asIs, expectedSale, list, quick, refs, localRefs, guideRefs, coverage, confidence, inspected, mileageFactor, condition: c, recon, conditionBasis, reportedCondition, knownRepairEstimate };
   }
 
   APP.marketSnapshot = market;
@@ -447,7 +455,7 @@
     if (subjectMileage && !subjectMileage.value) subjectMileage.value = APP.value?.("mileage") || "";
     panel.innerHTML = `
       <div class="v12-price-preview-head"><div><div class="v12-price-preview-title">Comparable Market Assessment</div><div class="v12-price-preview-sub">${m.coverage}. ${m.conditionBasis === "inspected" ? `Refined using the ${m.condition.pct}/100 (${m.condition.letter}) physical inspection.` : m.conditionBasis === "reported" ? `Uses the user-entered ${m.reportedCondition} reported condition; no physical inspection has been completed.` : "Uses a fair/typical condition assumption because no inspection or reported condition is available."}</div></div><span class="v12-pill ${m.confidence === "High" || m.confidence === "Moderate" ? "green" : "amber"}">${m.confidence} confidence</span></div>
-      <div class="v12-price-grid"><div class="v12-price-cell"><small>Private Median</small><strong>${money(m.privateMedian)}</strong></div><div class="v12-price-cell"><small>Dealer Median</small><strong>${money(m.dealerMedian)}</strong></div><div class="v12-price-cell"><small>Blended Baseline</small><strong>${money(m.baseline)}</strong></div><div class="v12-price-cell"><small>Trade Floor</small><strong>${money(m.tradeFloor)}</strong></div><div class="v12-price-cell"><small>Local Comps</small><strong>${m.localRefs}/6</strong></div><div class="v12-price-cell"><small>All References</small><strong>${m.refs}</strong></div></div>`;
+      <div class="v12-price-grid"><div class="v12-price-cell"><small>Private Median</small><strong>${money(m.privateMedian)}</strong></div><div class="v12-price-cell"><small>Dealer Median</small><strong>${money(m.dealerMedian)}</strong></div><div class="v12-price-cell"><small>Blended Baseline</small><strong>${money(m.baseline)}</strong></div><div class="v12-price-cell"><small>Market Downside</small><strong>${money(m.marketDownside)}</strong></div><div class="v12-price-cell"><small>Guaranteed Cash</small><strong>${money(m.guaranteedCashExit)}</strong></div><div class="v12-price-cell"><small>Effective Trade</small><strong>${money(m.effectiveTradeValue)}</strong></div><div class="v12-price-cell"><small>Best Guaranteed Exit</small><strong>${money(m.bestGuaranteedExit)}</strong></div><div class="v12-price-cell"><small>Local Comps</small><strong>${m.localRefs}/6</strong></div></div>`;
   }
 
   function renderValueReadiness() {
@@ -514,7 +522,7 @@
     }
     const estimateNote = `${m.conditionBasis === "inspected" ? `Uses ${m.condition.pct}/100 (${m.condition.letter}) inspected condition.` : m.conditionBasis === "reported" ? `Uses user-entered ${m.reportedCondition} reported condition${m.knownRepairEstimate ? ` and deducts ${money(m.knownRepairEstimate)} of known repairs` : ""}.` : "Uses a fair/typical condition assumption; no physical inspection or reported condition is available."} ${m.refs ? `Based on ${m.refs} entered market reference${m.refs===1?"":"s"}.` : "Enter at least one market reference on the Market page to calculate prices."}`;
     banner.innerHTML = mode === "sell"
-      ? `<div class="muted">CALCULATED SELLING PRICE ESTIMATES</div><div class="v12-price-grid"><div class="v12-price-cell"><small>As-Is Value</small><strong>${money(m.asIs)}</strong></div><div class="v12-price-cell"><small>Post-Recon Value</small><strong>${money(m.adjusted)}</strong></div><div class="v12-price-cell"><small>Recommended List</small><strong>${money(m.list)}</strong></div><div class="v12-price-cell"><small>Projected Sale</small><strong>${money(m.expectedSale)}</strong></div><div class="v12-price-cell"><small>Quick-Sale</small><strong>${money(m.quick)}</strong></div></div><div class="note">${estimateNote}</div>`
+      ? `<div class="muted">CALCULATED SELLING PRICE ESTIMATES</div><div class="v12-price-grid"><div class="v12-price-cell"><small>As-Is Value</small><strong>${money(m.asIs)}</strong></div><div class="v12-price-cell"><small>Post-Recon Value</small><strong>${money(m.adjusted)}</strong></div><div class="v12-price-cell"><small>Recommended List</small><strong>${money(m.list)}</strong></div><div class="v12-price-cell"><small>Projected Sale</small><strong>${money(m.expectedSale)}</strong></div><div class="v12-price-cell"><small>Quick-Sale</small><strong>${money(m.quick)}</strong></div><div class="v12-price-cell"><small>Market Downside</small><strong>${money(m.marketDownside)}</strong></div><div class="v12-price-cell"><small>Best Guaranteed Exit</small><strong>${money(m.bestGuaranteedExit)}</strong></div><div class="v12-price-cell"><small>Minimum Acceptable</small><strong>${money(num("sellFloor"))}</strong></div></div><div class="note">${estimateNote}</div>`
       : `<div class="muted">APP ESTIMATED CURRENT VALUE</div><div class="big">${money(m.asIs)}</div><div class="note">${estimateNote}</div>`;
   }
 
