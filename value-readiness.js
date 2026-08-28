@@ -28,9 +28,8 @@
     },
     buy: {
       required: [
-        { id: "buyAsk", fallback: "asking", label: "Seller Asking Price", why: "Needed as the starting purchase price." },
-        { id: "buyResale", label: "Expected Resale Price", why: "Needed for profit, ROI and maximum-buy calculations." },
-        { id: "requiredProfit", label: "Required Profit", why: "Needed to calculate the maximum sensible purchase price." }
+        { id: "buyAsk", fallback: "asking", label: "List Price", why: "Needed as the advertised starting purchase price." },
+        { id: "buyResale", label: "Estimated Market Value", why: "Needed to compare the all-in purchase cost with the vehicle's realistic value." }
       ],
       recommended: [
         { id: "buyTarget", label: "Target Purchase Price", why: "Enter the price you actually expect to offer or pay." },
@@ -227,7 +226,13 @@
     migrateLegacyAsking();
 
     const currentMode = mode();
-    const spec = SPECS[currentMode];
+    const baseSpec = SPECS[currentMode];
+    const ownershipPurchase = currentMode === "buy" && document.getElementById("buyIntent")?.value !== "flip";
+    const spec = ownershipPurchase ? {
+      ...baseSpec,
+      recommended: baseSpec.recommended.filter((item) => item.id !== "buySellingCosts"),
+      outputs: baseSpec.outputs.filter((id) => id !== "buyMargin")
+    } : baseSpec;
     const panel = ensurePanel();
     if (!panel) return;
 
@@ -255,7 +260,7 @@
       ${currentMode === "buy" ? `
         <div class="value-context-card">
           <div>
-            <span class="context-kicker">SELLER ASKING PRICE</span>
+            <span class="context-kicker">LIST PRICE</span>
             <strong>${askingPrice()}</strong>
           </div>
           <span class="context-note">Enter or edit this below under Required Inputs.</span>
