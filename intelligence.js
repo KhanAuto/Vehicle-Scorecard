@@ -289,6 +289,11 @@
       const reasons = recommendations[group.id] || [];
 
       if (!reasons.length) {
+        const badge = document.createElement("span");
+        badge.className = "priority-badge optional";
+        badge.textContent = "Optional";
+        details.querySelector(".group-main")?.appendChild(badge);
+        details.open = false;
         reasonsBox.classList.add("hidden");
         reasonsBox.innerHTML = "";
         return;
@@ -309,10 +314,11 @@
       const badge = document.createElement("span");
       badge.className = `priority-badge ${high ? "high" : ""}`;
       badge.textContent = high
-        ? "★ High Priority"
+        ? "★ Critical"
         : "★ Recommended";
 
       details.querySelector(".group-main")?.appendChild(badge);
+      details.open = true;
 
       reasonsBox.classList.remove("hidden");
       reasonsBox.innerHTML =
