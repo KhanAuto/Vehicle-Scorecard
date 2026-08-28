@@ -2,7 +2,7 @@
 "use strict";
 const APP=window.VehicleScorecard;if(!APP)return;
 const hasInspection=v=>Object.keys(v?.ratings||{}).length>0;
-const hasMarket=v=>["kbbTrade","kbbPrivate","edmundsTrade","edmundsPrivate","instantOffer","private1Price","private2Price","private3Price","dealer1Price","dealer2Price","dealer3Price"].some(id=>Number(v?.fields?.[id])>0);
+const hasMarket=v=>["kbbTrade","kbbPrivate","edmundsTrade","edmundsPrivate","estimatedWholesale","instantOffer","instantOffer2","dealerCashOffer","actualTradeOffer","private1Price","private2Price","private3Price","dealer1Price","dealer2Price","dealer3Price"].some(id=>Number(v?.fields?.[id])>0);
 const hasValue=v=>["buyAsk","buyResale","sellAsIs","sellTarget","knownCondition","knownRepairEstimate"].some(id=>String(v?.fields?.[id]||"").trim());
 const hasRecon=v=>Object.values(v?.recon||{}).some(x=>x&&(x.status&&x.status!=="none"||Number(x.override)>0));
 function coverage(v){return{vehicle:true,inspection:hasInspection(v),recon:hasRecon(v),market:hasMarket(v),value:hasValue(v)}}
