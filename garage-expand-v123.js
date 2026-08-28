@@ -82,9 +82,16 @@
         event.stopPropagation();
         if (!vehicle) return;
         await APP.loadSaved?.(vehicle.id);
-        APP.setAssessmentPath?.("full");
-        APP.saveCurrent?.();
         const kind = upgrade.dataset.v1214Upgrade;
+        const saved = APP.getSaved?.().find((v) => v.id === vehicle.id);
+        if (saved) {
+          saved.moduleCoverage = saved.moduleCoverage || {};
+          if (kind === "inspection") saved.moduleCoverage.inspectionStarted = true;
+          if (kind === "market") saved.moduleCoverage.valueStarted = true;
+          if (kind === "full") saved.moduleCoverage.fullRequested = true;
+          APP.saveList?.(APP.getSaved().map(v => v.id === saved.id ? saved : v));
+        }
+        if (kind === "full") APP.setAssessmentPath?.("full");
         const page = kind === "market" ? "marketPage" : "inspectionPage";
         APP.showPage?.(page);
         APP.toast?.("Existing vehicle information preserved. Add the missing module when ready.");
