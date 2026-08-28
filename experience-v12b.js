@@ -472,6 +472,7 @@
       mark("buyAcqCosts","recommended",num("buyAcqCosts") ? "✓ Added" : "Recommended — transport, inspection or acquisition costs.");
       if (flipIntent) mark("buySellingCosts","recommended",num("buySellingCosts") ? "✓ Added" : "Recommended — expected resale costs.");
     } else {
+      mark("sellAsk","recommended",num("sellAsk") ? "✓ Added" : "Recommended — the price you are advertising or plan to advertise.");
       mark("sellCosts","recommended",num("sellCosts") ? "✓ Added" : "Recommended — fees or selling costs you expect.");
       mark("sellFloor","optional",num("sellFloor") ? "✓ Added" : "Optional — minimum take-home you would accept.");
     }
