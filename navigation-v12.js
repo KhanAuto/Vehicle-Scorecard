@@ -57,7 +57,7 @@
       return Boolean(s?.answered);
     }
     if (pageId === "marketPage") {
-      return ["kbbTrade","kbbPrivate","edmundsTrade","edmundsPrivate","dealer1","dealer2","privateComp","instantOffer"]
+      return ["kbbTrade","kbbPrivate","edmundsTrade","edmundsPrivate","private1Price","private2Price","private3Price","dealer1Price","dealer2Price","dealer3Price","instantOffer"]
         .some((id) => APP.numberFrom?.(id) > 0);
     }
     if (pageId === "dealPage") {
