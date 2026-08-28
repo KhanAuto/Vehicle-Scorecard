@@ -476,8 +476,8 @@
     const flipIntent = document.getElementById("buyIntent")?.value === "flip";
     const valueReady = mode === "sell" || num("buyResale") > 0;
     const profitReady = !flipIntent || num("requiredProfit") > 0;
-    const requiredTotal = mode === "buy" ? (flipIntent ? 4 : 3) : 1;
-    const requiredDone = mode === "buy" ? [marketReady, askReady, valueReady, ...(flipIntent ? [profitReady] : [])].filter(Boolean).length : (marketReady ? 1 : 0);
+    const requiredTotal = mode === "buy" ? (flipIntent ? 4 : 3) : 3;
+    const requiredDone = mode === "buy" ? [marketReady, askReady, valueReady, ...(flipIntent ? [profitReady] : [])].filter(Boolean).length : [marketReady, num("sellAsk") > 0, num("sellFloor") > 0].filter(Boolean).length;
 
     panel.innerHTML = `
       <div class="readiness-head compact"><div><div class="readiness-title">${mode === "buy" ? "Buying" : "Selling"} analysis readiness</div><div class="readiness-summary ${requiredDone === requiredTotal ? "ready" : "pending"}">${requiredDone}/${requiredTotal} required inputs complete</div></div><div class="readiness-status ${requiredDone === requiredTotal ? "ready" : "pending"}">${requiredDone === requiredTotal ? "Ready" : `${requiredTotal-requiredDone} Remaining`}</div></div>
@@ -503,9 +503,9 @@
       mark("buyAcqCosts","recommended",num("buyAcqCosts") ? "✓ Added" : "Recommended — transport, inspection or acquisition costs.");
       if (flipIntent) mark("buySellingCosts","recommended",num("buySellingCosts") ? "✓ Added" : "Recommended — expected resale costs.");
     } else {
-      mark("sellAsk","recommended",num("sellAsk") ? "✓ Added" : "Recommended — the price you are advertising or plan to advertise.");
+      mark("sellAsk","required",num("sellAsk") ? "✓ Complete" : "Needed — the price you are advertising or plan to advertise.");
+      mark("sellFloor","required",num("sellFloor") ? "✓ Complete" : "Needed — the lowest sale price you are willing to accept.");
       mark("sellCosts","recommended",num("sellCosts") ? "✓ Added" : "Recommended — fees or selling costs you expect.");
-      mark("sellFloor","optional",num("sellFloor") ? "✓ Added" : "Optional — minimum take-home you would accept.");
     }
 
     let banner = document.getElementById("v12EstimateBanner");
