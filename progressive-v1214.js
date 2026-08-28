@@ -38,7 +38,7 @@
 
   const valueRequired = {
     buy: ["buyAsk","buyResale"],
-    sell: ["sellAsIs","sellTarget"]
+    sell: []
   };
 
   function controlLabel(id) {
@@ -105,7 +105,7 @@
     return [];
   }
   function friendly(id) {
-    const names={yearSelect:"year",makeSelect:"make",modelSelect:"model",mileage:"mileage",marketZip:"market ZIP",buyAsk:"list price",buyResale:"estimated market value",sellAsIs:"current as-is value",sellTarget:"target sale price"};
+    const names={yearSelect:"year",makeSelect:"make",modelSelect:"model",mileage:"mileage",marketZip:"market ZIP",buyAsk:"list price",buyResale:"estimated market value"};
     return names[id] || id;
   }
   function statusPanel(pageId) {
