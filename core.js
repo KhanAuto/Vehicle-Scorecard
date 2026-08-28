@@ -774,7 +774,7 @@
     if (year) {
       APP.$("#yearSelect").value = year;
       APP.$("#year").value = year;
-      await loadMakes();
+      if (destinationPage === "profilePage") await loadMakes();
     }
 
     if (make) {
@@ -788,7 +788,7 @@
 
       APP.$("#makeSelect").value = make;
       APP.$("#make").value = make;
-      await loadModels();
+      if (destinationPage === "profilePage") await loadModels();
     }
 
     if (model) {
