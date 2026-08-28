@@ -289,6 +289,7 @@ textarea { min-height: 88px; }
 
 .priority-badge { display: inline-block; margin-top: 5px; padding: 4px 7px; color: #0969da; background: #eaf4ff; border-radius: 999px; font-size: 10px; font-weight: 900; }
 .priority-badge.high { color: #9a3412; background: #fff0e7; }
+.priority-badge.optional { color: var(--muted); background: var(--soft); }
 .priority-reasons { margin: 12px 0 4px; padding: 9px; color: var(--muted); background: #1687ff0b; border: 1px solid var(--line); border-radius: 12px; font-size: 11px; line-height: 1.5; }
 .priority-reasons b { display: block; margin-bottom: 3px; color: var(--ink); }
 
