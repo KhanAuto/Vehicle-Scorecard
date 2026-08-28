@@ -474,7 +474,6 @@
     } else {
       mark("sellCosts","recommended",num("sellCosts") ? "✓ Added" : "Recommended — fees or selling costs you expect.");
       mark("sellFloor","optional",num("sellFloor") ? "✓ Added" : "Optional — minimum take-home you would accept.");
-      mark("brokerType","optional","Optional — only if another person is brokering the sale.");
     }
 
     let banner = document.getElementById("v12EstimateBanner");
