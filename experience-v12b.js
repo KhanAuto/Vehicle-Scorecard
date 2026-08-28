@@ -486,10 +486,21 @@
     const profitReady = !flipIntent || num("requiredProfit") > 0;
     const requiredTotal = mode === "buy" ? (flipIntent ? 4 : 3) : 3;
     const requiredDone = mode === "buy" ? [marketReady, askReady, valueReady, ...(flipIntent ? [profitReady] : [])].filter(Boolean).length : [marketReady, num("sellAsk") > 0, num("sellFloor") > 0].filter(Boolean).length;
+    const missingItems = [
+      ...(!marketReady ? [{ label: "Market references", page: "marketPage" }] : []),
+      ...(mode === "buy" && !askReady ? [{ label: "Seller asking price", field: "buyAsk" }] : []),
+      ...(mode === "buy" && !valueReady ? [{ label: flipIntent ? "Expected resale price" : "Estimated market value", field: "buyResale" }] : []),
+      ...(mode === "buy" && flipIntent && !profitReady ? [{ label: "Required profit", field: "requiredProfit" }] : []),
+      ...(mode === "sell" && !num("sellAsk") ? [{ label: "Asking price", field: "sellAsk" }] : []),
+      ...(mode === "sell" && !num("sellFloor") ? [{ label: "Minimum acceptable price", field: "sellFloor" }] : [])
+    ];
+    const firstMissing = missingItems[0];
+    const missingTarget = firstMissing ? (firstMissing.page ? `data-v12-missing-page="${firstMissing.page}"` : `data-v12-missing-field="${firstMissing.field}"`) : "";
 
     panel.innerHTML = `
-      <div class="readiness-head compact"><div><div class="readiness-title">${mode === "buy" ? "Buying" : "Selling"} analysis readiness</div><div class="readiness-summary ${requiredDone === requiredTotal ? "ready" : "pending"}">${requiredDone}/${requiredTotal} required inputs complete</div></div><div class="readiness-status ${requiredDone === requiredTotal ? "ready" : "pending"}">${requiredDone === requiredTotal ? "Ready" : `${requiredTotal-requiredDone} Remaining`}</div></div>
+      <div class="readiness-head compact"><div><div class="readiness-title">${mode === "buy" ? "Buying" : "Selling"} analysis readiness</div><div class="readiness-summary ${requiredDone === requiredTotal ? "ready" : "pending"}">${requiredDone}/${requiredTotal} required inputs complete</div></div>${requiredDone === requiredTotal ? '<div class="readiness-status ready">Ready</div>' : `<button type="button" class="readiness-status pending v12-missing-status" ${missingTarget}>${requiredTotal-requiredDone} Remaining</button>`}</div>
       <div class="readiness-progress"><div style="width:${Math.round(requiredDone/requiredTotal*100)}%"></div></div>
+      ${missingItems.length ? `<div class="v12-missing-links"><span>Missing:</span>${missingItems.map((item) => `<button type="button" ${item.page ? `data-v12-missing-page="${item.page}"` : `data-v12-missing-field="${item.field}"`}>${item.label} →</button>`).join("")}</div>` : ""}
       <div class="readiness-note compact-note">The app calculates current value from market references, mileage and the available condition basis. In Value Analysis Only, reported condition and known repairs are used without requiring the Inspection or Recon pages.</div>`;
 
     ["sellAsIs","sellPostRecon","sellTarget","sellList","sellQuick"].forEach((id) => document.getElementById(id)?.closest("label")?.classList.add("v12-derived"));
@@ -590,6 +601,20 @@
   });
   document.addEventListener("change", (event) => {
     if (event.target.closest("#marketPage") || event.target.closest("#dealPage") || event.target.closest("#reconPage")) window.setTimeout(render, 0);
+  });
+  document.addEventListener("click", (event) => {
+    const link = event.target.closest("[data-v12-missing-page], [data-v12-missing-field]");
+    if (!link) return;
+    event.preventDefault();
+    const page = link.dataset.v12MissingPage;
+    if (page) {
+      APP.showPage?.(page);
+      window.setTimeout(() => document.getElementById(page)?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+      return;
+    }
+    const field = document.getElementById(link.dataset.v12MissingField);
+    field?.closest("label")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    window.setTimeout(() => field?.focus(), 350);
   });
 
   document.addEventListener("scorecard:core-ready", () => {
