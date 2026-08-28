@@ -240,7 +240,11 @@
         APP.numberFrom("dealer1Price") ||
         APP.numberFrom("dealer2Price") ||
         APP.numberFrom("dealer3Price") ||
-        APP.numberFrom("instantOffer")
+        APP.numberFrom("estimatedWholesale") ||
+        APP.numberFrom("instantOffer") ||
+        APP.numberFrom("instantOffer2") ||
+        APP.numberFrom("dealerCashOffer") ||
+        APP.numberFrom("actualTradeOffer")
       );
     }
 
@@ -603,6 +607,7 @@
           : "CONDITION + VALUE · SELLING";
 
     let financialMetrics = "";
+    const marketValues = APP.marketSnapshot?.() || {};
 
     if (
       layer === "value" &&
@@ -658,6 +663,21 @@
           "Estimated Take-Home",
           APP.text("sellNet"),
           "After recon and selling costs"
+        ) +
+        reportMetric(
+          "Market Downside",
+          APP.money(marketValues.marketDownside),
+          "Conservative wholesale or low trade reference"
+        ) +
+        reportMetric(
+          "Best Guaranteed Exit",
+          APP.money(marketValues.bestGuaranteedExit),
+          "Highest current eligible executable offer"
+        ) +
+        reportMetric(
+          "Minimum Acceptable Price",
+          APP.money(APP.value("sellFloor")),
+          "Seller-defined lowest acceptable sale price"
         );
     }
 
