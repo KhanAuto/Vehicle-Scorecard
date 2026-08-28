@@ -273,14 +273,14 @@
         <div class="hint" id="dealModeHint">Complete the selected buy or sell analysis.</div>
         <div class="analysis-tabs"><button class="analysis-tab" data-analysis-mode="sell">Selling</button><button class="analysis-tab" data-analysis-mode="buy">Buying</button></div>
         <div id="sellAnalysis">
-          <div class="plain-guide"><div class="plain-guide-title">Selling: what these numbers mean</div><p>Enter what the car is worth now, what it could be worth after planned work, and what you realistically expect to sell it for.</p></div>
+          <div class="plain-guide"><div class="plain-guide-title">Selling: estimated value and proceeds</div><p>The app estimates these values from condition, market references, mileage and planned recon. Enter only your known costs, minimum take-home and selling strategy.</p></div>
           <div class="grid4 field-grid">
-            <label>Current As-Is Value<input id="sellAsIs"><span class="field-help">What the vehicle is realistically worth today before repairs.</span></label>
-            <label>Post-Recon Market Value<input id="sellPostRecon"><span class="field-help">What it could reasonably be worth after planned work.</span></label>
-            <label>Recommended List Price<input id="sellList"><span class="field-help">The advertised asking price.</span></label>
-            <label>Expected Sale Price<input id="sellTarget"><span class="field-help">What you realistically expect a buyer to pay.</span></label>
-            <label>Quick-Sale Price<input id="sellQuick"></label>
-            <label>Seller Minimum Net<input id="sellFloor"></label>
+            <label>Estimated As-Is Value<input id="sellAsIs"><span class="field-help">Calculated estimate before planned repairs.</span></label>
+            <label>Estimated Post-Recon Value<input id="sellPostRecon"><span class="field-help">Calculated estimate after the selected planned work.</span></label>
+            <label>Recommended List Price<input id="sellList"><span class="field-help">Calculated asking price with room for negotiation.</span></label>
+            <label>Projected Sale Price<input id="sellTarget"><span class="field-help">Calculated realistic transaction estimate.</span></label>
+            <label>Quick-Sale Estimate<input id="sellQuick"><span class="field-help">Calculated lower price intended to improve sale speed.</span></label>
+            <label>Minimum Take-Home<input id="sellFloor"><span class="field-help">Your optional minimum proceeds after recon and selling costs.</span></label>
             <label>Other Selling Costs<input id="sellCosts"></label>
             <label>Recon Strategy<select id="sellReconMode"><option value="all">Complete Planned Recon</option><option value="required">Required Only</option><option value="none">Sell As-Is</option></select></label>
           </div>
@@ -368,11 +368,11 @@
 
   <div id="appToast" class="update-toast"></div>
 
-  <script src="core.js?v=12.32"></script>
-  <script src="inspection.js?v=12.32"></script>
-  <script src="intelligence.js?v=12.32"></script>
-  <script src="ui.js?v=12.32"></script>
-  <script src="progressive-v1214.js?v=12.32"></script>
-  <script src="coverage-v1215.js?v=12.32"></script>
+  <script src="core.js?v=12.33"></script>
+  <script src="inspection.js?v=12.33"></script>
+  <script src="intelligence.js?v=12.33"></script>
+  <script src="ui.js?v=12.33"></script>
+  <script src="progressive-v1214.js?v=12.33"></script>
+  <script src="coverage-v1215.js?v=12.33"></script>
 </body>
 </html>
