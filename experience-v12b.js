@@ -186,10 +186,10 @@
     const mark = document.querySelector(".brandmark");
     if (mark) {
       mark.classList.add("v12-brandmark");
-      mark.innerHTML = '<img src="logo-mark.svg" alt="Vehicle Scorecard">';
+      mark.innerHTML = '<img src="icon-192.png" alt="Vehicle Scorecard">';
     }
     const drawer = document.querySelector(".drawer-emblem");
-    if (drawer) drawer.innerHTML = '<img src="logo-mark.svg" alt="" style="width:40px;height:40px">';
+    if (drawer) drawer.innerHTML = '<img src="icon-192.png" alt="" style="width:40px;height:40px">';
   }
 
   function darkDefault() {
@@ -324,7 +324,7 @@
     const saved = APP.getSaved?.().slice().reverse() || [];
     host.className = "card v12-garage";
     host.innerHTML = `
-      <div class="v12-garage-head"><div><h2>My Garage</h2><p>Research, inspect and revisit saved vehicles without starting over.</p></div><div class="v12-garage-actions"><button class="v12-new-button" id="v12New">+ New Vehicle</button><button class="btn" id="v12All">View All</button></div></div>
+      <div class="v12-garage-head"><div><h2>My Garage</h2><p>Research, inspect and revisit saved vehicles without starting over.</p></div><div class="v12-garage-actions"><button class="btn" id="v12All">View All</button></div></div>
       <div class="v12-start-panel">
         <button class="v12-start-choice inspection" data-v12-launch="inspection"><span class="v12-choice-icon">✓</span><b>Inspection Only</b><span>Vehicle is in front of you. Focus on physical condition, maintenance and risk.</span></button>
         <button class="v12-start-choice value" data-v12-launch="value"><span class="v12-choice-icon">$</span><b>Value Analysis Only</b><span>Screen an online listing first and decide whether it is worth pursuing.</span></button>
@@ -355,7 +355,6 @@
       // the persisted/correct image after navigation or a dashboard re-render.
     });
 
-    host.querySelector("#v12New")?.addEventListener("click", () => launchNew("full"));
     host.querySelector("#v12All")?.addEventListener("click", () => APP.showPage?.("savedPage"));
     host.querySelectorAll("[data-v12-launch]").forEach((button) => button.addEventListener("click", () => launchNew(button.dataset.v12Launch)));
 

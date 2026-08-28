@@ -346,7 +346,7 @@
     const saved = APP.getSaved?.().slice().reverse() || [];
     host.className = "card v12-garage";
     host.innerHTML = `
-      <div class="v12-garage-head"><div><h2>My Garage</h2><p>Saved vehicles, research and assessments in one place.</p></div><div class="v12-garage-actions"><button id="v12NewVehicle" class="v12-new-button">+ New Vehicle</button><button id="v12AllVehicles" class="btn">View All</button></div></div>
+      <div class="v12-garage-head"><div><h2>My Garage</h2><p>Saved vehicles, research and assessments in one place.</p></div><div class="v12-garage-actions"><button id="v12AllVehicles" class="btn">View All</button></div></div>
       <div class="v12-start-panel">
         <button class="v12-start-choice inspection" data-v12-start="inspection"><span class="v12-choice-icon">✓</span><b>Inspection Only</b><span>Assess physical condition, maintenance and risk when the vehicle is in front of you.</span></button>
         <button class="v12-start-choice value" data-v12-start="value"><span class="v12-choice-icon">$</span><b>Value Analysis Only</b><span>Decide whether an online listing is worth your time before arranging an inspection.</span></button>
@@ -450,10 +450,10 @@
     const mark = document.querySelector(".brandmark");
     if (mark) {
       mark.classList.add("v12-brandmark");
-      mark.innerHTML = '<img src="logo-mark.svg" alt="">';
+      mark.innerHTML = '<img src="icon-192.png" alt="">';
     }
     const drawer = document.querySelector(".drawer-emblem");
-    if (drawer) drawer.innerHTML = '<img src="logo-mark.svg" alt="" style="width:38px;height:38px">';
+    if (drawer) drawer.innerHTML = '<img src="icon-192.png" alt="" style="width:38px;height:38px">';
   }
 
   function applyDarkDefault() {

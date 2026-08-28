@@ -4,9 +4,20 @@
   const APP = window.VehicleScorecard;
   if (!APP) return;
 
+  const PATH_KEY = "vehicleScorecardAssessmentPath";
   let currentStep = 1;
   let selectedPurpose = "";
   let selectedDirective = "";
+
+  function syncSelectedPurpose() {
+    const stored = localStorage.getItem(PATH_KEY);
+    if (["inspection", "value", "full"].includes(stored)) {
+      selectedPurpose = stored;
+    } else if (!selectedPurpose) {
+      selectedPurpose = APP.getLayer?.() === "condition" ? "inspection" : "full";
+    }
+    return selectedPurpose;
+  }
 
   function el(tag, className = "", html = "") {
     const node = document.createElement(tag);
@@ -21,15 +32,18 @@
   }
 
   function showStep(step) {
-    currentStep = Math.min(4, Math.max(1, Number(step) || 1));
+    syncSelectedPurpose();
+    currentStep = Math.min(3, Math.max(1, Number(step) || 1));
     document.querySelectorAll("[data-intake-step]").forEach((panel) => {
       panel.classList.toggle("active", Number(panel.dataset.intakeStep) === currentStep);
     });
     const label = document.querySelector("#intakeStepLabel");
     const bar = document.querySelector("#intakeProgressBar");
-    if (label) label.textContent = `Step ${currentStep} of 4`;
-    if (bar) bar.style.width = `${currentStep * 25}%`;
+    if (label) label.textContent = `Step ${currentStep} of 3`;
+    if (bar) bar.style.width = `${currentStep * (100 / 3)}%`;
     if (currentStep >= 2) updateVehicleSummary();
+    const directive = APP.$("#directiveChoices");
+    if (directive) directive.classList.toggle("hidden", selectedPurpose === "inspection");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -65,17 +79,6 @@
     if (purpose === "value" || purpose === "full") APP.setLayer("value");
   }
 
-  function choosePurpose(purpose) {
-    applyPurpose(purpose);
-    APP.$$('[data-guided-purpose]').forEach((button) => {
-      const active = button.dataset.guidedPurpose === purpose;
-      button.classList.toggle("active", active);
-      button.classList.toggle("selected", active);
-    });
-    const directive = APP.$("#directiveChoices");
-    if (directive) directive.classList.toggle("hidden", purpose === "inspection");
-  }
-
   function chooseDirective(mode) {
     selectedDirective = mode;
     APP.setMode(mode);
@@ -105,7 +108,7 @@
     const shell = el("div", "card intake-shell");
     shell.dataset.guided = "true";
     shell.innerHTML = `
-      <div class="intake-topline"><div><div class="eyebrow intake-eyebrow">NEW VEHICLE ASSESSMENT</div><div class="title">Identify the Vehicle</div><div class="hint">Enter the VIN to identify the vehicle automatically, or select the year, make and model manually.</div></div><div id="intakeStepLabel" class="intake-step-label">Step 1 of 4</div></div>
+      <div class="intake-topline"><div><div class="eyebrow intake-eyebrow">NEW VEHICLE ASSESSMENT</div><div class="title">Identify the Vehicle</div><div class="hint">Enter the VIN to identify the vehicle automatically, or select the year, make and model manually.</div></div><div id="intakeStepLabel" class="intake-step-label">Step 1 of 3</div></div>
       <div class="intake-progress"><div id="intakeProgressBar"></div></div>
       <div class="intake-step active" data-intake-step="1">
         <div class="intake-method-grid intake-method-grid-two">
@@ -121,20 +124,10 @@
         <div class="intake-actions"><button class="btn" data-intake-back="1">← Vehicle</button><button class="btn primary" id="intakeMileageNext">Continue →</button></div>
       </div>
       <div class="intake-step" data-intake-step="3">
-        <div class="title">What would you like to do?</div>
-        <div class="hint">Choose what you need right now. You can add another analysis later without creating the vehicle again.</div>
-        <div class="assessment-layer-grid three-purpose-grid guided-purpose-grid">
-          <button type="button" class="assessment-choice" data-guided-purpose="inspection"><b>Inspection Only</b><span>Assess physical condition, maintenance, history and risk.</span></button>
-          <button type="button" class="assessment-choice" data-guided-purpose="value"><b>Value Analysis Only</b><span>Research market value and buying or selling economics without requiring a physical inspection.</span></button>
-          <button type="button" class="assessment-choice" data-guided-purpose="full"><b>Full Assessment</b><span>Combine inspection, recon, market and value analysis for the strongest recommendation.</span></button>
-        </div>
-        <div id="directiveChoices" class="directive-panel hidden"><div class="selector-label">For this value analysis, are you:</div><div class="assessment-layer-grid directive-grid"><button type="button" class="assessment-choice" data-guided-directive="buy"><b>Buying</b><span>Evaluate acquisition cost, risk, maximum sensible purchase price and expected value.</span></button><button type="button" class="assessment-choice" data-guided-directive="sell"><b>Selling</b><span>Evaluate current value, worthwhile recon, expected proceeds and sale strategy.</span></button></div></div>
-        <div class="intake-actions"><button class="btn" data-intake-back="2">← Mileage</button><button class="btn primary" id="intakePurposeNext">Continue →</button></div>
-      </div>
-      <div class="intake-step" data-intake-step="4">
         <div class="title">Additional Vehicle Details</div><div class="hint">Add ownership and history details now if you know them. You can return and expand this vehicle profile at any time.</div>
+        <div id="directiveChoices" class="directive-panel hidden"><div class="selector-label">For this value analysis, are you:</div><div class="assessment-layer-grid directive-grid"><button type="button" class="assessment-choice" data-guided-directive="buy"><b>Buying</b><span>Evaluate acquisition cost, risk, maximum sensible purchase price and expected value.</span></button><button type="button" class="assessment-choice" data-guided-directive="sell"><b>Selling</b><span>Evaluate current value, worthwhile recon, expected proceeds and sale strategy.</span></button></div></div>
         <div class="grid4 field-grid" id="miscVehicleFields"></div><div id="guidedRecallTools" class="toolbar inline-toolbar no-print"></div><div id="guidedRecall"></div>
-        <div class="intake-actions"><button class="btn" data-intake-back="3">← Purpose</button><button class="btn primary" id="intakeFinish">Continue Assessment →</button></div>
+        <div class="intake-actions"><button class="btn" data-intake-back="2">← Mileage</button><button class="btn primary" id="intakeFinish">Continue Assessment →</button></div>
       </div>`;
     oldCard.replaceWith(shell);
 
@@ -156,24 +149,29 @@
     startGrid.innerHTML = `
       <button class="start-card start-card-primary" id="guidedNewVehicle"><b>+ New Vehicle</b><span>Start an inspection, value analysis or full assessment.</span></button>
       <button class="start-card" id="guidedSavedVehicles"><b>Open Saved Vehicles</b><span>Resume a vehicle and add or update any analysis without starting over.</span></button>`;
-    APP.$("#guidedNewVehicle").onclick = () => { APP.clearCurrent(); selectedPurpose = ""; selectedDirective = ""; showStep(1); APP.showPage("profilePage"); };
+    APP.$("#guidedNewVehicle").onclick = () => { APP.clearCurrent(); selectedDirective = ""; syncSelectedPurpose(); showStep(1); APP.showPage("profilePage"); };
     APP.$("#guidedSavedVehicles").onclick = () => APP.showPage("savedPage");
   }
 
   function bindWizard() {
     APP.$("#showVinEntry").onclick = () => showEntry("vin");
     APP.$("#showManualEntry").onclick = () => showEntry("manual");
-    APP.$$('[data-guided-purpose]').forEach((button) => button.addEventListener("click", () => choosePurpose(button.dataset.guidedPurpose)));
     APP.$$('[data-guided-directive]').forEach((button) => button.addEventListener("click", () => chooseDirective(button.dataset.guidedDirective)));
     APP.$("#intakeVehicleNext").onclick = () => { if (requireVehicle()) showStep(2); };
-    APP.$("#intakeMileageNext").onclick = () => { if (!APP.$("#mileageUnknown").checked && !APP.value("mileage").trim()) { alert("Enter the current mileage or mark mileage as unknown."); return; } showStep(3); };
-    APP.$("#intakePurposeNext").onclick = () => {
-      if (!selectedPurpose) { alert("Choose Inspection Only, Value Analysis Only, or Full Assessment."); return; }
-      if (selectedPurpose !== "inspection" && !selectedDirective) { alert("Choose Buying or Selling for the value analysis."); return; }
-      showStep(4);
+    APP.$("#intakeMileageNext").onclick = () => {
+      if (!APP.$("#mileageUnknown").checked && !APP.value("mileage").trim()) {
+        alert("Enter the current mileage or mark mileage as unknown.");
+        return;
+      }
+      syncSelectedPurpose();
+      showStep(3);
     };
     APP.$("#intakeFinish").onclick = () => {
-      if (!selectedPurpose) { showStep(3); return; }
+      syncSelectedPurpose();
+      if (selectedPurpose !== "inspection" && !selectedDirective) {
+        alert("Choose Buying or Selling for the value analysis.");
+        return;
+      }
       applyPurpose(selectedPurpose);
       if (selectedDirective) APP.setMode(selectedDirective);
       APP.saveCurrent?.();
@@ -204,6 +202,6 @@
     }, true);
   }
 
-  function initialize() { buildWizard(); transformDashboard(); bindWizard(); clarifyInspectionMetrics(); bindInspectionNavigationFallback(); }
+  function initialize() { syncSelectedPurpose(); buildWizard(); transformDashboard(); bindWizard(); clarifyInspectionMetrics(); bindInspectionNavigationFallback(); }
   document.addEventListener("scorecard:core-ready", initialize);
 })();

@@ -130,7 +130,7 @@
       let index=0;
       const tryNext=()=>{
         if(index>=candidates.length){
-          host.innerHTML='<div class="v122-photo-none"><img src="logo-mark.svg" alt=""><span>Representative photo unavailable</span></div>';
+          host.innerHTML='<div class="v122-photo-none"><img src="icon-192.png" alt=""><span>Representative photo unavailable</span></div>';
           host.dataset.photoKey=key;
           return;
         }
