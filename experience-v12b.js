@@ -220,7 +220,7 @@
 
     const originalLoad = APP.loadSaved;
     if (typeof originalLoad === "function" && !originalLoad._v12b) {
-      const wrappedLoad = async (id) => {
+      const wrappedLoad = async (id, destinationPage) => {
         const vehicle = APP.getSaved?.().find((v) => v.id === id);
         const inspectionWasAdded = Boolean(
           vehicle?.moduleCoverage?.inspectionStarted ||
@@ -228,7 +228,7 @@
         );
         const restoredPath = inspectionWasAdded ? "full" : vehicle?.assessmentPath;
         if (restoredPath) localStorage.setItem(PATH_KEY, restoredPath);
-        const result = await originalLoad(id);
+        const result = await originalLoad(id, destinationPage);
         if (inspectionWasAdded) {
           APP.setAssessmentPath?.("full");
           APP.setLayer?.("value");
