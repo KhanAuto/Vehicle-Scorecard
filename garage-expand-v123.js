@@ -8,6 +8,17 @@
     return [f.year,f.make,f.model,f.trim].filter(Boolean).join(" ") || "Saved Vehicle";
   }
   function money(v){ return Number(v)>0 ? APP.money(Number(v)) : "—"; }
+  function scoreNumber(value) {
+    const match = String(value ?? "").match(/-?\d+(?:\.\d+)?/);
+    return match ? Math.min(100, Math.max(0, Number(match[0]) || 0)) : null;
+  }
+  function baseGrade(score) {
+    if (score === null) return "—";
+    if(score>=97)return"A+";if(score>=93)return"A";if(score>=90)return"A-";
+    if(score>=87)return"B+";if(score>=83)return"B";if(score>=80)return"B-";
+    if(score>=77)return"C+";if(score>=73)return"C";if(score>=70)return"C-";
+    if(score>=65)return"D+";if(score>=60)return"D";return"F";
+  }
   function persistSavedSilently(vehicles) {
     localStorage.setItem(APP.constants.STORAGE_KEY, JSON.stringify(vehicles));
   }
@@ -20,21 +31,32 @@
   function targetButton(label,page){ return `<button type="button" class="btn v123-jump" data-v123-page="${page}">${label}</button>`; }
   function details(vehicle){
     const f=vehicle.fields||{};
-    const score=String(vehicle.score?.pct||"—");
+    const score=scoreNumber(vehicle.score?.pct);
     const grade=vehicle.conditionGrade||"—";
     const ratings=Object.keys(vehicle.ratings||{}).length;
+    const totalChecks=(APP.inspection?.groups||[]).reduce((total,group)=>total+(group.items?.length||0),0);
+    const coverage=totalChecks?Math.round(Math.min(ratings,totalChecks)/totalChecks*100):0;
     const recon=Object.values(vehicle.recon||{}).filter(x=>x?.status&&x.status!=="none").length;
     const market=["kbbTrade","kbbPrivate","edmundsTrade","edmundsPrivate","dealer1","dealer2","privateComp","instantOffer"].filter(id=>Number(f[id])>0).length;
-    const asking=Number(f.buyAsk)||0;
-    const value=Number(f.buyResale)||Number(f.sellAsIs)||Number(f.sellTarget)||0;
+    const selling=vehicle.mode==="sell";
+    const priceOneLabel=selling?"EXPECTED SALE PRICE":"LIST PRICE";
+    const priceOne=selling?(Number(f.sellTarget)||0):(Number(f.buyAsk)||Number(f.asking)||0);
+    const priceTwoLabel=selling?"CURRENT AS-IS VALUE":"ESTIMATED MARKET VALUE";
+    const priceTwo=selling?(Number(f.sellAsIs)||0):(Number(f.buyResale)||0);
+    const gradeWasCapped=score!==null&&grade!=="—"&&grade!==baseGrade(score);
+    const upgradeActions=[
+      ratings?"":'<button type="button" class="btn" data-v1214-upgrade="inspection">+ Add Inspection</button>',
+      market?"":'<button type="button" class="btn" data-v1214-upgrade="market">+ Add Market & Value</button>',
+      (vehicle.assessmentPath||"")==="full"?"":'<button type="button" class="btn primary" data-v1214-upgrade="full">Complete Full Assessment</button>'
+    ].filter(Boolean).join("");
     return `<div class="v123-inline-overview">
       <div class="v123-overview-grid">
-        <div><small>CONDITION</small><strong>${score}${score!=="—"?" / 100":""} · ${grade}</strong></div>
-        <div><small>INSPECTION</small><strong>${ratings ? `${ratings} checks recorded` : "Not started"}</strong></div>
-        <div><small>RECON</small><strong>${recon ? `${recon} items` : "None recorded"}</strong></div>
-        <div><small>MARKET DATA</small><strong>${market ? `${market} references` : "Not entered"}</strong></div>
-        <div><small>ASKING PRICE</small><strong>${money(asking)}</strong></div>
-        <div><small>VALUE CONTEXT</small><strong>${money(value)}</strong></div>
+        <div><small>CONDITION</small><strong>${score===null?"Not inspected":`${score}/100 · ${grade}`}</strong><span>${gradeWasCapped?"Grade limited by critical findings":"Physical condition score"}</span></div>
+        <div><small>INSPECTION COVERAGE</small><strong>${ratings ? `${Math.min(ratings,totalChecks)}/${totalChecks} checks · ${coverage}%` : "Not started"}</strong><span>${coverage===100?"All inspection questions answered":"Recorded answers, including N/A"}</span></div>
+        <div><small>RECON PLAN</small><strong>${recon ? `${recon} item${recon===1?"":"s"} planned` : "None recorded"}</strong><span>Required, recommended or cosmetic work</span></div>
+        <div><small>MARKET DATA</small><strong>${market ? `${market} pricing reference${market===1?"":"s"}` : "Not entered"}</strong><span>Guides and comparable values entered</span></div>
+        <div><small>${priceOneLabel}</small><strong>${money(priceOne)}</strong><span>${selling?"Expected transaction price":"Seller's advertised price"}</span></div>
+        <div><small>${priceTwoLabel}</small><strong>${money(priceTwo)}</strong><span>${selling?"Estimated value before planned work":"Condition-adjusted comparison value"}</span></div>
       </div>
       <div class="v123-vehicle-facts"><span>${f.mileage ? `${Number(f.mileage).toLocaleString()} miles` : "Mileage unknown"}</span>${f.vin?`<span>VIN ${f.vin}</span>`:""}${f.title?`<span>${f.title} title</span>`:""}</div>
       <div class="v123-actions">
@@ -45,15 +67,11 @@
         ${targetButton("View Value Analysis","dealPage")}
         <button type="button" class="btn v123-remove" data-v123-remove>Remove from Garage</button>
       </div>
-      <div class="v1214-upgrade">
+      ${upgradeActions?`<div class="v1214-upgrade">
         <div class="v1214-upgrade-title">Build on this assessment</div>
         <div class="v1214-upgrade-copy">Keep everything already entered and stack additional analysis on top of it.</div>
-        <div class="v1214-upgrade-actions">
-          ${ratings ? "" : '<button type="button" class="btn" data-v1214-upgrade="inspection">+ Add Inspection</button>'}
-          ${market ? "" : '<button type="button" class="btn" data-v1214-upgrade="market">+ Add Market & Value</button>'}
-          ${(vehicle.assessmentPath || "") === "full" ? "" : '<button type="button" class="btn primary" data-v1214-upgrade="full">Complete Full Assessment</button>'}
-        </div>
-      </div>
+        <div class="v1214-upgrade-actions">${upgradeActions}</div>
+      </div>`:""}
     </div>`;
   }
   function upgradeVehiclePath(vehicle, page) {
