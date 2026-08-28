@@ -559,8 +559,8 @@
 
     if (postRecon && sellTarget > postRecon) {
       pricingCheck = `+${APP.money(sellTarget - postRecon)} over market`;
-    } else if (postRecon && APP.numberFrom("sellList") > postRecon) {
-      pricingCheck = `List +${APP.money(APP.numberFrom("sellList") - postRecon)}`;
+    } else if (postRecon && APP.numberFrom("sellAsk") > postRecon) {
+      pricingCheck = `Asking +${APP.money(APP.numberFrom("sellAsk") - postRecon)}`;
     } else if (postRecon) {
       pricingCheck = "Aligned";
     }
@@ -637,7 +637,7 @@
     "seller", "title", "keys", "cold", "records", "contingency", "marketZip",
     "marketRadius", "compMileage", "marketNotes", "kbbTrade", "kbbPrivate",
     "edmundsTrade", "edmundsPrivate", "dealer1", "dealer2", "privateComp",
-    "instantOffer", "sellAsIs", "sellPostRecon", "sellList", "sellTarget",
+    "instantOffer", "sellAsk", "sellAsIs", "sellPostRecon", "sellList", "sellTarget",
     "sellQuick", "sellFloor", "sellCosts", "sellReconMode", "buyIntent", "buyAsk", "buyTarget",
     "buyResale", "requiredProfit", "buyFees", "buyAcqCosts", "buySellingCosts",
     "buyReconMode", "knownCondition", "knownRepairEstimate", "knownRepairs",
