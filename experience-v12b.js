@@ -222,8 +222,17 @@
     if (typeof originalLoad === "function" && !originalLoad._v12b) {
       const wrappedLoad = async (id) => {
         const vehicle = APP.getSaved?.().find((v) => v.id === id);
-        if (vehicle?.assessmentPath) localStorage.setItem(PATH_KEY, vehicle.assessmentPath);
+        const inspectionWasAdded = Boolean(
+          vehicle?.moduleCoverage?.inspectionStarted ||
+          (Object.keys(vehicle?.ratings || {}).length && vehicle?.assessmentPath === "value")
+        );
+        const restoredPath = inspectionWasAdded ? "full" : vehicle?.assessmentPath;
+        if (restoredPath) localStorage.setItem(PATH_KEY, restoredPath);
         const result = await originalLoad(id);
+        if (inspectionWasAdded) {
+          APP.setAssessmentPath?.("full");
+          APP.setLayer?.("value");
+        }
         document.dispatchEvent(new CustomEvent("scorecard:pathchange"));
         return result;
       };
