@@ -8,6 +8,9 @@
     return [f.year,f.make,f.model,f.trim].filter(Boolean).join(" ") || "Saved Vehicle";
   }
   function money(v){ return Number(v)>0 ? APP.money(Number(v)) : "—"; }
+  function persistSavedSilently(vehicles) {
+    localStorage.setItem(APP.constants.STORAGE_KEY, JSON.stringify(vehicles));
+  }
   function savedFor(card){
     const id = card.dataset.vehicleId;
     if (id) return (APP.getSaved?.()||[]).find(v => String(v.id) === String(id)) || null;
@@ -71,7 +74,7 @@
         ...(addsValueModule ? { valueStarted: true } : {})
       }
     };
-    APP.saveList?.((APP.getSaved?.() || []).map((saved) =>
+    persistSavedSilently((APP.getSaved?.() || []).map((saved) =>
       String(saved.id) === String(upgraded.id) ? upgraded : saved
     ));
     return upgraded;
@@ -119,7 +122,7 @@
           if (kind === "full") saved.moduleCoverage.fullRequested = true;
           saved.assessmentPath = "full";
           saved.layer = "value";
-          APP.saveList?.(APP.getSaved().map(v => v.id === saved.id ? saved : v));
+          persistSavedSilently(APP.getSaved().map(v => v.id === saved.id ? saved : v));
         }
         const page = kind === "market" ? "marketPage" : "inspectionPage";
         await APP.loadSaved?.(vehicle.id, page);
