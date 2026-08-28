@@ -1,5 +1,5 @@
 {
-  "version": "12.40",
-  "build": "2026-08-28-separated-exit-values",
+  "version": "12.41",
+  "build": "2026-08-28-linked-missing-inputs",
   "released": "2026-08-28"
 }
