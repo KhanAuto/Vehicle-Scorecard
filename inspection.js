@@ -4,12 +4,6 @@
   const APP = window.VehicleScorecard;
   if (!APP) return;
 
-  const DEPTH_TEXT = {
-    targeted: "Open only what matters for this inspection.",
-    standard: "Recommended general used-vehicle inspection.",
-    detailed: "Open every section for a comprehensive inspection."
-  };
-
   function item(name, max, options = {}) {
     return {
       name,
@@ -594,40 +588,16 @@
       });
     });
 
-    applyDepth(localStorage.getItem(APP.constants.DEPTH_KEY) || "standard");
+    APP.$$(".inspection-group").forEach((details) => {
+      details.open = false;
+    });
     recalculate();
 
     document.dispatchEvent(new CustomEvent("scorecard:inspectionrender"));
   }
 
-  function applyDepth(depth) {
-    const validDepth = DEPTH_TEXT[depth] ? depth : "standard";
-
-    localStorage.setItem(APP.constants.DEPTH_KEY, validDepth);
-
-    APP.$$("[data-depth]").forEach((button) => {
-      button.classList.toggle("active", button.dataset.depth === validDepth);
-    });
-
-    APP.$("#depthNote").textContent = DEPTH_TEXT[validDepth];
-
-    APP.$$(".inspection-group").forEach((details) => {
-      details.open =
-        validDepth === "detailed" ||
-        (
-          validDepth === "standard" &&
-          ["exterior", "wear", "engine", "interior", "electrical", "road"]
-            .includes(details.dataset.group)
-        );
-    });
-  }
-
   function initializeInspection() {
     render();
-
-    APP.$$("[data-depth]").forEach((button) => {
-      button.addEventListener("click", () => applyDepth(button.dataset.depth));
-    });
   }
 
   document.addEventListener("scorecard:core-ready", initializeInspection);
