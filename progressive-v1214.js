@@ -55,13 +55,12 @@
   function decorateFields(pageId) {
     const cfg = modules[pageId];
     if (!cfg) return;
+    if (pageId === "dealPage") {
+      document.querySelectorAll("#dealPage .v1214-field-badge").forEach((badge) => badge.remove());
+      return;
+    }
     cfg.required.forEach(id => badge(controlLabel(id), "required"));
     cfg.optional.forEach(id => badge(controlLabel(id), "optional"));
-    if (pageId === "dealPage") {
-      const mode = APP.getMode?.() === "sell" ? "sell" : "buy";
-      valueRequired[mode].forEach(id => badge(controlLabel(id), "required"));
-      valueRequired[mode === "buy" ? "sell" : "buy"].forEach(id => badge(controlLabel(id), "optional"));
-    }
   }
   function helpPanel(pageId) {
     const page = document.getElementById(pageId);
@@ -105,7 +104,7 @@
     return [];
   }
   function friendly(id) {
-    const names={yearSelect:"year",makeSelect:"make",modelSelect:"model",mileage:"mileage",marketZip:"market ZIP",buyAsk:"list price",buyResale:"estimated market value",sellAsk:"your asking price",sellFloor:"minimum acceptable price"};
+    const names={yearSelect:"year",makeSelect:"make",modelSelect:"model",mileage:"mileage",marketZip:"market ZIP",buyAsk:"list price",buyResale:"estimated market value",sellAsk:"asking price",sellFloor:"minimum acceptable price"};
     return names[id] || id;
   }
   function statusPanel(pageId) {
