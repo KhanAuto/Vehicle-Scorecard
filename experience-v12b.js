@@ -6,6 +6,7 @@
 
   const PATH_KEY = "vehicleScorecardAssessmentPath";
   const IMAGE_CACHE_KEY = "vehicleScorecardCommonsImagesV1";
+  const DETAIL_KEY = "vehicleScorecardDetailedView";
   let syncingDerived = false;
 
   function num(id) {
@@ -30,6 +31,9 @@
   function money(value) {
     return value > 0 ? APP.money(value) : "—";
   }
+
+  function detailedView() { return localStorage.getItem(DETAIL_KEY) === "true"; }
+  function detailToggle() { return `<button type="button" class="btn v12-detail-toggle" data-v12-detail-toggle>${detailedView() ? "Simplify view" : "Show details"}</button>`; }
 
   function path() {
     const stored = localStorage.getItem(PATH_KEY);
@@ -188,6 +192,7 @@
   function syncDerived() {
     if (syncingDerived) return;
     const m = market();
+    document.documentElement.classList.toggle("v12-detailed-view", detailedView());
     if (!m.baseline) return;
     let changed = false;
     changed = setAuto("buyResale", m.expectedSale) || changed;
@@ -453,9 +458,12 @@
     const m = market();
     const subjectMileage = document.getElementById("compMileage");
     if (subjectMileage && !subjectMileage.value) subjectMileage.value = APP.value?.("mileage") || "";
+    const marketMetrics = detailedView()
+      ? `<div class="v12-price-cell"><small>Private Median</small><strong>${money(m.privateMedian)}</strong></div><div class="v12-price-cell"><small>Dealer Median</small><strong>${money(m.dealerMedian)}</strong></div><div class="v12-price-cell"><small>Blended Baseline</small><strong>${money(m.baseline)}</strong></div><div class="v12-price-cell"><small>Market Downside</small><strong>${money(m.marketDownside)}</strong></div><div class="v12-price-cell"><small>Guaranteed Cash</small><strong>${money(m.guaranteedCashExit)}</strong></div><div class="v12-price-cell"><small>Effective Trade</small><strong>${money(m.effectiveTradeValue)}</strong></div><div class="v12-price-cell"><small>Best Guaranteed Exit</small><strong>${money(m.bestGuaranteedExit)}</strong></div><div class="v12-price-cell"><small>Local Comps</small><strong>${m.localRefs}/6</strong></div>`
+      : `<div class="v12-price-cell"><small>Market Baseline</small><strong>${money(m.baseline)}</strong></div><div class="v12-price-cell"><small>Estimated As-Is</small><strong>${money(m.asIs)}</strong></div><div class="v12-price-cell"><small>Local Comps</small><strong>${m.localRefs}/6</strong></div><div class="v12-price-cell"><small>Confidence</small><strong>${m.confidence}</strong></div>`;
     panel.innerHTML = `
       <div class="v12-price-preview-head"><div><div class="v12-price-preview-title">Comparable Market Assessment</div><div class="v12-price-preview-sub">${m.coverage}. ${m.conditionBasis === "inspected" ? `Refined using the ${m.condition.pct}/100 (${m.condition.letter}) physical inspection.` : m.conditionBasis === "reported" ? `Uses the user-entered ${m.reportedCondition} reported condition; no physical inspection has been completed.` : "Uses a fair/typical condition assumption because no inspection or reported condition is available."}</div></div><span class="v12-pill ${m.confidence === "High" || m.confidence === "Moderate" ? "green" : "amber"}">${m.confidence} confidence</span></div>
-      <div class="v12-price-grid"><div class="v12-price-cell"><small>Private Median</small><strong>${money(m.privateMedian)}</strong></div><div class="v12-price-cell"><small>Dealer Median</small><strong>${money(m.dealerMedian)}</strong></div><div class="v12-price-cell"><small>Blended Baseline</small><strong>${money(m.baseline)}</strong></div><div class="v12-price-cell"><small>Market Downside</small><strong>${money(m.marketDownside)}</strong></div><div class="v12-price-cell"><small>Guaranteed Cash</small><strong>${money(m.guaranteedCashExit)}</strong></div><div class="v12-price-cell"><small>Effective Trade</small><strong>${money(m.effectiveTradeValue)}</strong></div><div class="v12-price-cell"><small>Best Guaranteed Exit</small><strong>${money(m.bestGuaranteedExit)}</strong></div><div class="v12-price-cell"><small>Local Comps</small><strong>${m.localRefs}/6</strong></div></div>`;
+      <div class="v12-view-controls"><span>${detailedView() ? "Detailed view" : "Standard view"}</span>${detailToggle()}</div><div class="v12-price-grid">${marketMetrics}</div>`;
   }
 
   function renderValueReadiness() {
@@ -501,7 +509,7 @@
       <div class="readiness-head compact"><div><div class="readiness-title">${mode === "buy" ? "Buying" : "Selling"} analysis readiness</div><div class="readiness-summary ${requiredDone === requiredTotal ? "ready" : "pending"}">${requiredDone}/${requiredTotal} required inputs complete</div></div>${requiredDone === requiredTotal ? '<div class="readiness-status ready">Ready</div>' : `<button type="button" class="readiness-status pending v12-missing-status" ${missingTarget}>${requiredTotal-requiredDone} Remaining</button>`}</div>
       <div class="readiness-progress"><div style="width:${Math.round(requiredDone/requiredTotal*100)}%"></div></div>
       ${missingItems.length ? `<div class="v12-missing-links"><span>Missing:</span>${missingItems.map((item) => `<button type="button" ${item.page ? `data-v12-missing-page="${item.page}"` : `data-v12-missing-field="${item.field}"`}>${item.label} →</button>`).join("")}</div>` : ""}
-      <div class="readiness-note compact-note">The app calculates current value from market references, mileage and the available condition basis. In Value Analysis Only, reported condition and known repairs are used without requiring the Inspection or Recon pages.</div>`;
+      <div class="v12-view-controls"><span>${detailedView() ? "Detailed view" : "Standard view"}</span>${detailToggle()}</div><div class="readiness-note compact-note">The app calculates current value from market references, mileage and the available condition basis. In Value Analysis Only, reported condition and known repairs are used without requiring the Inspection or Recon pages.</div>`;
 
     ["sellAsIs","sellPostRecon","sellTarget","sellList","sellQuick"].forEach((id) => document.getElementById(id)?.closest("label")?.classList.add("v12-derived"));
 
@@ -532,8 +540,11 @@
       banner = document.createElement("div"); banner.id = "v12EstimateBanner"; banner.className = "v12-estimate-banner"; panel.insertAdjacentElement("afterend", banner);
     }
     const estimateNote = `${m.conditionBasis === "inspected" ? `Uses ${m.condition.pct}/100 (${m.condition.letter}) inspected condition.` : m.conditionBasis === "reported" ? `Uses user-entered ${m.reportedCondition} reported condition${m.knownRepairEstimate ? ` and deducts ${money(m.knownRepairEstimate)} of known repairs` : ""}.` : "Uses a fair/typical condition assumption; no physical inspection or reported condition is available."} ${m.refs ? `Based on ${m.refs} entered market reference${m.refs===1?"":"s"}.` : "Enter at least one market reference on the Market page to calculate prices."}`;
+    const sellingMetrics = detailedView()
+      ? `<div class="v12-price-cell"><small>As-Is Value</small><strong>${money(m.asIs)}</strong></div><div class="v12-price-cell"><small>Post-Recon Value</small><strong>${money(m.adjusted)}</strong></div><div class="v12-price-cell"><small>Recommended List</small><strong>${money(m.list)}</strong></div><div class="v12-price-cell"><small>Projected Sale</small><strong>${money(m.expectedSale)}</strong></div><div class="v12-price-cell"><small>Quick-Sale</small><strong>${money(m.quick)}</strong></div><div class="v12-price-cell"><small>Market Downside</small><strong>${money(m.marketDownside)}</strong></div><div class="v12-price-cell"><small>Best Guaranteed Exit</small><strong>${money(m.bestGuaranteedExit)}</strong></div><div class="v12-price-cell"><small>Minimum Acceptable</small><strong>${money(num("sellFloor"))}</strong></div>`
+      : `<div class="v12-price-cell"><small>Estimated As-Is</small><strong>${money(m.asIs)}</strong></div><div class="v12-price-cell"><small>Projected Sale</small><strong>${money(m.expectedSale)}</strong></div><div class="v12-price-cell"><small>Best Guaranteed Exit</small><strong>${money(m.bestGuaranteedExit)}</strong></div><div class="v12-price-cell"><small>Minimum Acceptable</small><strong>${money(num("sellFloor"))}</strong></div>`;
     banner.innerHTML = mode === "sell"
-      ? `<div class="muted">CALCULATED SELLING PRICE ESTIMATES</div><div class="v12-price-grid"><div class="v12-price-cell"><small>As-Is Value</small><strong>${money(m.asIs)}</strong></div><div class="v12-price-cell"><small>Post-Recon Value</small><strong>${money(m.adjusted)}</strong></div><div class="v12-price-cell"><small>Recommended List</small><strong>${money(m.list)}</strong></div><div class="v12-price-cell"><small>Projected Sale</small><strong>${money(m.expectedSale)}</strong></div><div class="v12-price-cell"><small>Quick-Sale</small><strong>${money(m.quick)}</strong></div><div class="v12-price-cell"><small>Market Downside</small><strong>${money(m.marketDownside)}</strong></div><div class="v12-price-cell"><small>Best Guaranteed Exit</small><strong>${money(m.bestGuaranteedExit)}</strong></div><div class="v12-price-cell"><small>Minimum Acceptable</small><strong>${money(num("sellFloor"))}</strong></div></div><div class="note">${estimateNote}</div>`
+      ? `<div class="muted">CALCULATED SELLING PRICE ESTIMATES</div><div class="v12-price-grid">${sellingMetrics}</div><div class="note">${estimateNote}</div>`
       : `<div class="muted">APP ESTIMATED CURRENT VALUE</div><div class="big">${money(m.asIs)}</div><div class="note">${estimateNote}</div>`;
   }
 
@@ -603,6 +614,13 @@
     if (event.target.closest("#marketPage") || event.target.closest("#dealPage") || event.target.closest("#reconPage")) window.setTimeout(render, 0);
   });
   document.addEventListener("click", (event) => {
+    const detailButton = event.target.closest("[data-v12-detail-toggle]");
+    if (detailButton) {
+      event.preventDefault();
+      localStorage.setItem(DETAIL_KEY, detailedView() ? "false" : "true");
+      render();
+      return;
+    }
     const link = event.target.closest("[data-v12-missing-page], [data-v12-missing-field]");
     if (!link) return;
     event.preventDefault();
