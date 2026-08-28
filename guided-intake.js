@@ -106,7 +106,7 @@
 
     const pairs = mode === "buy"
       ? [["intakeBuyAsk","buyAsk"],["intakeBuyTarget","buyTarget"],["intakeBuyIntent","buyIntent"]]
-      : [["intakeSellAsIs","sellAsIs"],["intakeSellTarget","sellTarget"],["intakeSellFloor","sellFloor"]];
+      : [["intakeSellFloor","sellFloor"],["intakeSellCosts","sellCosts"],["intakeSellReconMode","sellReconMode"]];
     pairs.forEach(([mirrorId, sourceId]) => {
       const mirror = APP.$(`#${mirrorId}`);
       const source = APP.$(`#${sourceId}`);
@@ -117,7 +117,7 @@
   function bindDirectiveQuestions() {
     const pairs = [
       ["intakeBuyAsk","buyAsk"],["intakeBuyTarget","buyTarget"],["intakeBuyIntent","buyIntent"],
-      ["intakeSellAsIs","sellAsIs"],["intakeSellTarget","sellTarget"],["intakeSellFloor","sellFloor"]
+      ["intakeSellFloor","sellFloor"],["intakeSellCosts","sellCosts"],["intakeSellReconMode","sellReconMode"]
     ];
     pairs.forEach(([mirrorId, sourceId]) => {
       const mirror = APP.$(`#${mirrorId}`);
@@ -172,7 +172,7 @@
         <div id="directiveChoices" class="directive-panel hidden"><div class="selector-label">For this value analysis, are you:</div><div class="assessment-layer-grid directive-grid"><button type="button" class="assessment-choice" data-guided-directive="buy"><b>Buying</b><span>Evaluate acquisition cost, risk, maximum sensible purchase price and expected value.</span></button><button type="button" class="assessment-choice" data-guided-directive="sell"><b>Selling</b><span>Evaluate current value, worthwhile recon, expected proceeds and sale strategy.</span></button></div></div>
         <div id="directiveQuestions" class="directive-questions hidden">
           <div id="buyDirectiveQuestions" class="directive-question-set hidden"><div class="directive-question-head"><b>Buying details</b><span>These values will carry into the Value module.</span></div><div class="grid3 field-grid"><label>List Price <span class="v1214-field-badge required">Required</span><input id="intakeBuyAsk" inputmode="decimal"><span class="field-help">The seller's advertised asking price.</span></label><label>Target Purchase Price <span class="v1214-field-badge optional">Optional</span><input id="intakeBuyTarget" inputmode="decimal"><span class="field-help">What you plan to offer or pay.</span></label><label>Purchase Intent<select id="intakeBuyIntent"><option value="ownership">Personal Use / Ownership</option><option value="flip">Resale / Flip</option></select><span class="field-help">Profitability is only used for Resale / Flip.</span></label></div></div>
-          <div id="sellDirectiveQuestions" class="directive-question-set hidden"><div class="directive-question-head"><b>Selling details</b><span>These values will carry into the Value module.</span></div><div class="grid3 field-grid"><label>Current As-Is Value <span class="v1214-field-badge required">Required</span><input id="intakeSellAsIs" inputmode="decimal"><span class="field-help">What the vehicle is realistically worth today.</span></label><label>Expected Sale Price <span class="v1214-field-badge required">Required</span><input id="intakeSellTarget" inputmode="decimal"><span class="field-help">What you realistically expect a buyer to pay.</span></label><label>Seller Minimum Net <span class="v1214-field-badge optional">Optional</span><input id="intakeSellFloor" inputmode="decimal"><span class="field-help">Your minimum acceptable proceeds after costs.</span></label></div></div>
+          <div id="sellDirectiveQuestions" class="directive-question-set hidden"><div class="directive-question-head"><b>Selling details</b><span>Add only constraints you already know. The assessment will calculate what the vehicle is worth.</span></div><div class="grid3 field-grid"><label>Minimum Take-Home <span class="v1214-field-badge optional">Optional</span><input id="intakeSellFloor" inputmode="decimal"><span class="field-help">The minimum amount you need to receive after recon and selling costs.</span></label><label>Known Selling Costs <span class="v1214-field-badge optional">Optional</span><input id="intakeSellCosts" inputmode="decimal"><span class="field-help">Advertising, detailing, transport, paperwork or other known sale costs.</span></label><label>Recon Strategy <span class="v1214-field-badge optional">Optional</span><select id="intakeSellReconMode"><option value="all">Complete Planned Recon</option><option value="required">Required Only</option><option value="none">Sell As-Is</option></select><span class="field-help">Choose how much planned work should be included in the selling analysis.</span></label></div></div>
         </div>
         <div class="grid4 field-grid" id="miscVehicleFields"></div><div id="guidedRecallTools" class="toolbar inline-toolbar no-print"></div><div id="guidedRecall"></div>
         <div class="intake-actions"><button class="btn" data-intake-back="2">← Mileage</button><button class="btn primary" id="intakeFinish">Continue Assessment →</button></div>
