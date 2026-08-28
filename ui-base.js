@@ -411,7 +411,7 @@
   }
 
   function syncValueMode() {
-    const mode = APP.getMode();
+    const mode = APP.getMode() === "sell" ? "sell" : "buy";
 
     APP.$$("[data-analysis-mode]")
       .forEach((button) => {
@@ -435,7 +435,7 @@
 
     APP.$("#dealModeHint").textContent =
       mode === "buy"
-        ? "Buying analysis: compare asking price, recon, market value and expected margin."
+        ? "Buying analysis: compare list price, target purchase price, all-in cost, condition and market value."
         : "Selling analysis: compare as-is/post-recon value, local market and expected proceeds.";
   }
 
