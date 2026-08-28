@@ -39,8 +39,8 @@
     const recon=Object.values(vehicle.recon||{}).filter(x=>x?.status&&x.status!=="none").length;
     const market=["kbbTrade","kbbPrivate","edmundsTrade","edmundsPrivate","dealer1","dealer2","privateComp","instantOffer"].filter(id=>Number(f[id])>0).length;
     const selling=vehicle.mode==="sell";
-    const priceOneLabel=selling?"EXPECTED SALE PRICE":"LIST PRICE";
-    const priceOne=selling?(Number(f.sellTarget)||0):(Number(f.buyAsk)||Number(f.asking)||0);
+    const priceOneLabel=selling?"ASKING PRICE":"SELLER ASKING PRICE";
+    const priceOne=selling?(Number(f.sellAsk)||0):(Number(f.buyAsk)||Number(f.asking)||0);
     const priceTwoLabel=selling?"CURRENT AS-IS VALUE":"ESTIMATED MARKET VALUE";
     const priceTwo=selling?(Number(f.sellAsIs)||0):(Number(f.buyResale)||0);
     const gradeWasCapped=score!==null&&grade!=="—"&&grade!==baseGrade(score);
@@ -57,7 +57,7 @@
         <div><small>INSPECTION COVERAGE</small><strong>${ratings ? `${Math.min(ratings,totalChecks)}/${totalChecks} checks · ${coverage}%` : "Not started"}</strong><span>${coverage===100?"All inspection questions answered":"Recorded answers, including N/A"}</span></div>
         <div><small>RECON PLAN</small><strong>${recon ? `${recon} item${recon===1?"":"s"} planned` : "None recorded"}</strong><span>Required, recommended or cosmetic work</span></div>
         <div><small>MARKET DATA</small><strong>${market ? `${market} pricing reference${market===1?"":"s"}` : "Not entered"}</strong><span>Guides and comparable values entered</span></div>
-        <div><small>${priceOneLabel}</small><strong>${money(priceOne)}</strong><span>${selling?"Expected transaction price":"Seller's advertised price"}</span></div>
+        <div><small>${priceOneLabel}</small><strong>${money(priceOne)}</strong><span>${selling?"Your advertised or planned asking price":"Seller's advertised price"}</span></div>
         <div><small>${priceTwoLabel}</small><strong>${money(priceTwo)}</strong><span>${selling?"Estimated value before planned work":"Condition-adjusted comparison value"}</span></div>
       </div>
       <div class="v123-vehicle-facts"><span>${f.mileage ? `${Number(f.mileage).toLocaleString()} miles` : "Mileage unknown"}</span>${f.vin?`<span>VIN ${f.vin}</span>`:""}${f.title?`<span>${f.title} title</span>`:""}</div>
