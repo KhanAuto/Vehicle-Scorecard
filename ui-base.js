@@ -633,6 +633,11 @@
     ) {
       financialMetrics =
         reportMetric(
+          "Your Asking Price",
+          APP.money(APP.value("sellAsk")),
+          "Advertised or planned asking price"
+        ) +
+        reportMetric(
           "Estimated As-Is Value",
           APP.money(
             APP.value("sellAsIs")
