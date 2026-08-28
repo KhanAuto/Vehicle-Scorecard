@@ -1,0 +1,44 @@
+.v12-report-dialog {
+  width: min(720px, calc(100vw - 28px));
+  padding: 0;
+  border: 1px solid #25384f;
+  border-radius: 20px;
+  background: #0d1a2c;
+  color: #edf5ff;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, .55);
+}
+.v12-report-dialog::backdrop {
+  background: rgba(2, 8, 18, .78);
+  backdrop-filter: blur(5px);
+}
+.v12-report-dialog-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 20px 14px;
+  border-bottom: 1px solid #25384f;
+}
+.v12-report-dialog-head small { color: #59aaff; font-weight: 900; letter-spacing: .09em; }
+.v12-report-dialog-head h2 { margin: 4px 0 3px; }
+.v12-report-dialog-head p { margin: 0; color: #9cacbf; font-size: 12px; }
+.v12-dialog-close {
+  width: 38px;
+  height: 38px;
+  border: 1px solid #25384f;
+  border-radius: 11px;
+  background: #101f33;
+  color: #edf5ff;
+  font-size: 24px;
+}
+.v12-report-choices {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  padding: 18px;
+}
+.v12-report-choices .v12-start-choice { background: #101f33; }
+@media (max-width: 760px) {
+  .v12-report-choices { grid-template-columns: 1fr; padding: 12px; }
+  .v12-report-choices .v12-start-choice { min-height: 0; }
+  .v12-report-dialog-head { padding: 16px; }
+}
