@@ -37,7 +37,7 @@
     const totalChecks=(APP.inspection?.groups||[]).reduce((total,group)=>total+(group.items?.length||0),0);
     const coverage=totalChecks?Math.round(Math.min(ratings,totalChecks)/totalChecks*100):0;
     const recon=Object.values(vehicle.recon||{}).filter(x=>x?.status&&x.status!=="none").length;
-    const market=["kbbTrade","kbbPrivate","edmundsTrade","edmundsPrivate","dealer1","dealer2","privateComp","instantOffer"].filter(id=>Number(f[id])>0).length;
+    const market=["kbbTrade","kbbPrivate","edmundsTrade","edmundsPrivate","private1Price","private2Price","private3Price","dealer1Price","dealer2Price","dealer3Price","instantOffer"].filter(id=>Number(f[id])>0).length;
     const selling=vehicle.mode==="sell";
     const priceOneLabel=selling?"ASKING PRICE":"SELLER ASKING PRICE";
     const priceOne=selling?(Number(f.sellAsk)||0):(Number(f.buyAsk)||Number(f.asking)||0);
